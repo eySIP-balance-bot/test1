@@ -165,20 +165,14 @@ int main(void)
 	init_adxl();
 	init_devices1();
 	
-	SetTunings(175,0.1,10000);
+	SetTunings(0,0,5);
 	while(1)
 	{
 		acc_Angle=acc_angle();
 		Input=(double)acc_Angle;
-		if (abs(Input)==41)
-		{
-			Input=0;
-		}
-		
+		Compute();
 		stop();
 		_delay_ms(10);
-		Compute();
-		
 		if (Output>0)
 		{
 			set_PWM_value(18+Output/100);
