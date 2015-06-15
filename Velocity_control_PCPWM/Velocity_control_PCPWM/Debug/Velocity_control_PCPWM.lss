@@ -1,0 +1,413 @@
+
+Velocity_control_PCPWM.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00000252  00000000  00000000  00000054  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .stab         000006e4  00000000  00000000  000002a8  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  2 .stabstr      00000085  00000000  00000000  0000098c  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  3 .debug_aranges 00000080  00000000  00000000  00000a18  2**3
+                  CONTENTS, READONLY, DEBUGGING
+  4 .debug_info   000005c1  00000000  00000000  00000a98  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .debug_abbrev 00000182  00000000  00000000  00001059  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_line   0000039e  00000000  00000000  000011db  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_frame  00000114  00000000  00000000  0000157c  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_str    000001d2  00000000  00000000  00001690  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_loc    0000003d  00000000  00000000  00001862  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	0c 94 72 00 	jmp	0xe4	; 0xe4 <__ctors_end>
+   4:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+   8:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+   c:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  10:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  14:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  18:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  1c:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  20:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  24:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  28:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  2c:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  30:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  34:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  38:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  3c:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  40:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  44:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  48:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  4c:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  50:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  54:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  58:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  5c:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  60:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  64:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  68:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  6c:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  70:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  74:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  78:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  7c:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  80:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  84:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  88:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  8c:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  90:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  94:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  98:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  9c:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  a0:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  a4:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  a8:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  ac:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  b0:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  b4:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  b8:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  bc:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  c0:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  c4:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  c8:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  cc:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  d0:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  d4:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  d8:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  dc:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+  e0:	0c 94 93 00 	jmp	0x126	; 0x126 <__bad_interrupt>
+
+000000e4 <__ctors_end>:
+  e4:	11 24       	eor	r1, r1
+  e6:	1f be       	out	0x3f, r1	; 63
+  e8:	cf ef       	ldi	r28, 0xFF	; 255
+  ea:	d1 e2       	ldi	r29, 0x21	; 33
+  ec:	de bf       	out	0x3e, r29	; 62
+  ee:	cd bf       	out	0x3d, r28	; 61
+  f0:	00 e0       	ldi	r16, 0x00	; 0
+  f2:	0c bf       	out	0x3c, r16	; 60
+
+000000f4 <__do_copy_data>:
+  f4:	12 e0       	ldi	r17, 0x02	; 2
+  f6:	a0 e0       	ldi	r26, 0x00	; 0
+  f8:	b2 e0       	ldi	r27, 0x02	; 2
+  fa:	e2 e5       	ldi	r30, 0x52	; 82
+  fc:	f2 e0       	ldi	r31, 0x02	; 2
+  fe:	00 e0       	ldi	r16, 0x00	; 0
+ 100:	0b bf       	out	0x3b, r16	; 59
+ 102:	02 c0       	rjmp	.+4      	; 0x108 <__do_copy_data+0x14>
+ 104:	07 90       	elpm	r0, Z+
+ 106:	0d 92       	st	X+, r0
+ 108:	a0 30       	cpi	r26, 0x00	; 0
+ 10a:	b1 07       	cpc	r27, r17
+ 10c:	d9 f7       	brne	.-10     	; 0x104 <__do_copy_data+0x10>
+
+0000010e <__do_clear_bss>:
+ 10e:	12 e0       	ldi	r17, 0x02	; 2
+ 110:	a0 e0       	ldi	r26, 0x00	; 0
+ 112:	b2 e0       	ldi	r27, 0x02	; 2
+ 114:	01 c0       	rjmp	.+2      	; 0x118 <.do_clear_bss_start>
+
+00000116 <.do_clear_bss_loop>:
+ 116:	1d 92       	st	X+, r1
+
+00000118 <.do_clear_bss_start>:
+ 118:	a0 30       	cpi	r26, 0x00	; 0
+ 11a:	b1 07       	cpc	r27, r17
+ 11c:	e1 f7       	brne	.-8      	; 0x116 <.do_clear_bss_loop>
+ 11e:	0e 94 01 01 	call	0x202	; 0x202 <main>
+ 122:	0c 94 27 01 	jmp	0x24e	; 0x24e <_exit>
+
+00000126 <__bad_interrupt>:
+ 126:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
+
+0000012a <motion_pin_config>:
+#include <util/delay.h>
+
+//Function to configure ports to enable robot's motion
+void motion_pin_config (void)
+{
+	DDRL = DDRL | 0xE4;    //set direction of the PORTL2.5,6,7 pins as output
+ 12a:	aa e0       	ldi	r26, 0x0A	; 10
+ 12c:	b1 e0       	ldi	r27, 0x01	; 1
+ 12e:	8c 91       	ld	r24, X
+ 130:	84 6e       	ori	r24, 0xE4	; 228
+ 132:	8c 93       	st	X, r24
+	PORTL = PORTL & 0x18;  //set initial value of the PORTL2.5,6,7 pins to logic 0
+ 134:	eb e0       	ldi	r30, 0x0B	; 11
+ 136:	f1 e0       	ldi	r31, 0x01	; 1
+ 138:	80 81       	ld	r24, Z
+ 13a:	88 71       	andi	r24, 0x18	; 24
+ 13c:	80 83       	st	Z, r24
+	DDRL = DDRL | 0x18;    //Setting PL3 and PL4 pins as output for PWM generation
+ 13e:	8c 91       	ld	r24, X
+ 140:	88 61       	ori	r24, 0x18	; 24
+ 142:	8c 93       	st	X, r24
+	PORTL = PORTL | 0x18;  //PL3 and PL4 pins are for velocity control using PWM
+ 144:	80 81       	ld	r24, Z
+ 146:	88 61       	ori	r24, 0x18	; 24
+ 148:	80 83       	st	Z, r24
+}
+ 14a:	08 95       	ret
+
+0000014c <init_ports>:
+
+//Function to initialize ports
+void init_ports()
+{
+ motion_pin_config();
+ 14c:	0e 94 95 00 	call	0x12a	; 0x12a <motion_pin_config>
+}
+ 150:	08 95       	ret
+
+00000152 <timer5_init>:
+// Prescale:1024
+// PWM 10bit phase_correct, TOP=0x03FF
+// Timer Frequency:
+void timer5_init()
+{
+	TCCR5B = 0x00;	//Stop
+ 152:	e1 e2       	ldi	r30, 0x21	; 33
+ 154:	f1 e0       	ldi	r31, 0x01	; 1
+ 156:	10 82       	st	Z, r1
+	TCNT5H = 0xFC;	//Counter higher 8-bit value to which OCR5xH value is compared with
+ 158:	8c ef       	ldi	r24, 0xFC	; 252
+ 15a:	80 93 25 01 	sts	0x0125, r24
+	TCNT5L = 0x01;	//Counter lower 8-bit value to which OCR5xH value is compared with
+ 15e:	81 e0       	ldi	r24, 0x01	; 1
+ 160:	80 93 24 01 	sts	0x0124, r24
+	OCR5AH = 0x03;	//Output compare register high value for Left Motor
+ 164:	93 e0       	ldi	r25, 0x03	; 3
+ 166:	90 93 29 01 	sts	0x0129, r25
+	OCR5AL = 0xFF;	//Output compare register low value for Left Motor
+ 16a:	8f ef       	ldi	r24, 0xFF	; 255
+ 16c:	80 93 28 01 	sts	0x0128, r24
+	OCR5BH = 0x03;	//Output compare register high value for Right Motor
+ 170:	90 93 2b 01 	sts	0x012B, r25
+	OCR5BL = 0xFF;	//Output compare register low value for Right Motor
+ 174:	80 93 2a 01 	sts	0x012A, r24
+	OCR5CH = 0x03;	//Output compare register high value for Motor C1
+ 178:	90 93 2d 01 	sts	0x012D, r25
+	OCR5CL = 0xFF;	//Output compare register low value for Motor C1
+ 17c:	80 93 2c 01 	sts	0x012C, r24
+	TCCR5A = 0xAB;	/*{COM5A1=1, COM5A0=0; COM5B1=1, COM5B0=0; COM5C1=1 COM5C0=0}
+ 180:	8b ea       	ldi	r24, 0xAB	; 171
+ 182:	80 93 20 01 	sts	0x0120, r24
+ 					  For Overriding normal port functionality to OCRnA outputs.
+				  	  {WGM51=1, WGM50=1} Along With (WGM53=0,WGM52=0) in TCCR5B for Selecting Phase_correct PWM 10-bit Mode*/
+	
+	TCCR5B = 0x05;	//WGM52=0; CS52=1, CS51=0, CS50=1 (Prescaler=1024)
+ 186:	85 e0       	ldi	r24, 0x05	; 5
+ 188:	80 83       	st	Z, r24
+}
+ 18a:	08 95       	ret
+
+0000018c <velocity>:
+
+// Function for robot velocity control
+void velocity (unsigned int left_motor, unsigned int right_motor)
+{   
+	OCR5A = (unsigned int)left_motor;
+ 18c:	90 93 29 01 	sts	0x0129, r25
+ 190:	80 93 28 01 	sts	0x0128, r24
+	OCR5B = (unsigned int)right_motor;
+ 194:	70 93 2b 01 	sts	0x012B, r23
+ 198:	60 93 2a 01 	sts	0x012A, r22
+}
+ 19c:	08 95       	ret
+
+0000019e <motion_set>:
+void motion_set (unsigned char Direction)
+{
+ unsigned char PortLRestore = 0;
+
+ //Direction &= 0x0F; 			// removing upper nibbel as it is not needed
+ PortLRestore = PORTL; 			// reading the PORTA's original status
+ 19e:	eb e0       	ldi	r30, 0x0B	; 11
+ 1a0:	f1 e0       	ldi	r31, 0x01	; 1
+ 1a2:	90 81       	ld	r25, Z
+ PortLRestore &= 0x18; 			// setting lower direction nibbel to 0
+ 1a4:	98 71       	andi	r25, 0x18	; 24
+ PortLRestore |= Direction; 	// adding lower nibbel for direction command and restoring the PORTA status
+ 1a6:	89 2b       	or	r24, r25
+ PORTL = PortLRestore; 			// setting the command to the port
+ 1a8:	80 83       	st	Z, r24
+}
+ 1aa:	08 95       	ret
+
+000001ac <forward>:
+
+
+void forward (void) 		//both inputs forward
+{
+	motion_set(0xA0);
+ 1ac:	80 ea       	ldi	r24, 0xA0	; 160
+ 1ae:	0e 94 cf 00 	call	0x19e	; 0x19e <motion_set>
+}
+ 1b2:	08 95       	ret
+
+000001b4 <back>:
+
+void back (void) 			//both inputs backward
+{
+	motion_set(0x44);
+ 1b4:	84 e4       	ldi	r24, 0x44	; 68
+ 1b6:	0e 94 cf 00 	call	0x19e	; 0x19e <motion_set>
+}
+ 1ba:	08 95       	ret
+
+000001bc <left>:
+
+void left (void) 			//input12 backward, input34 forward
+{
+	motion_set(0x84);
+ 1bc:	84 e8       	ldi	r24, 0x84	; 132
+ 1be:	0e 94 cf 00 	call	0x19e	; 0x19e <motion_set>
+}
+ 1c2:	08 95       	ret
+
+000001c4 <right>:
+
+void right (void) 			//input34 backward, input12 forward
+{
+	motion_set(0x60);
+ 1c4:	80 e6       	ldi	r24, 0x60	; 96
+ 1c6:	0e 94 cf 00 	call	0x19e	; 0x19e <motion_set>
+}
+ 1ca:	08 95       	ret
+
+000001cc <soft_left>:
+
+void soft_left (void) 		//input12 stationary, input34 forward
+{
+	motion_set(0x80);
+ 1cc:	80 e8       	ldi	r24, 0x80	; 128
+ 1ce:	0e 94 cf 00 	call	0x19e	; 0x19e <motion_set>
+}
+ 1d2:	08 95       	ret
+
+000001d4 <soft_right>:
+
+void soft_right (void)      //input12 forward, input34 stationary
+{
+	motion_set(0x20);
+ 1d4:	80 e2       	ldi	r24, 0x20	; 32
+ 1d6:	0e 94 cf 00 	call	0x19e	; 0x19e <motion_set>
+}
+ 1da:	08 95       	ret
+
+000001dc <soft_left_2>:
+
+void soft_left_2 (void)     //input12 backward, input34 stationary
+{
+	motion_set(0x40);
+ 1dc:	80 e4       	ldi	r24, 0x40	; 64
+ 1de:	0e 94 cf 00 	call	0x19e	; 0x19e <motion_set>
+}
+ 1e2:	08 95       	ret
+
+000001e4 <soft_right_2>:
+
+void soft_right_2 (void)    //input12 stationary, input34 backward
+{
+	motion_set(0x04);
+ 1e4:	84 e0       	ldi	r24, 0x04	; 4
+ 1e6:	0e 94 cf 00 	call	0x19e	; 0x19e <motion_set>
+}
+ 1ea:	08 95       	ret
+
+000001ec <stop>:
+
+void stop (void)            // both input stationary
+{
+	motion_set(0x00);
+ 1ec:	80 e0       	ldi	r24, 0x00	; 0
+ 1ee:	0e 94 cf 00 	call	0x19e	; 0x19e <motion_set>
+}
+ 1f2:	08 95       	ret
+
+000001f4 <init_devices>:
+
+void init_devices (void) //use this function to initialize all devices
+{
+ cli(); //disable all interrupts
+ 1f4:	f8 94       	cli
+ init_ports();
+ 1f6:	0e 94 a6 00 	call	0x14c	; 0x14c <init_ports>
+ timer5_init();
+ 1fa:	0e 94 a9 00 	call	0x152	; 0x152 <timer5_init>
+ sei(); //re-enable interrupts
+ 1fe:	78 94       	sei
+}
+ 200:	08 95       	ret
+
+00000202 <main>:
+
+//Main Function
+int main()
+{
+	init_devices();
+ 202:	0e 94 fa 00 	call	0x1f4	; 0x1f4 <init_devices>
+	  
+	while(1)
+	{
+		motion_set(0x20);
+ 206:	80 e2       	ldi	r24, 0x20	; 32
+ 208:	0e 94 cf 00 	call	0x19e	; 0x19e <motion_set>
+	#else
+		//round up by default
+		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
+	#endif
+
+	__builtin_avr_delay_cycles(__ticks_dc);
+ 20c:	8f ef       	ldi	r24, 0xFF	; 255
+ 20e:	9f e7       	ldi	r25, 0x7F	; 127
+ 210:	a6 e1       	ldi	r26, 0x16	; 22
+ 212:	81 50       	subi	r24, 0x01	; 1
+ 214:	90 40       	sbci	r25, 0x00	; 0
+ 216:	a0 40       	sbci	r26, 0x00	; 0
+ 218:	e1 f7       	brne	.-8      	; 0x212 <main+0x10>
+ 21a:	00 c0       	rjmp	.+0      	; 0x21c <main+0x1a>
+ 21c:	00 00       	nop
+		_delay_ms(500);
+		
+		motion_set(0x40);
+ 21e:	80 e4       	ldi	r24, 0x40	; 64
+ 220:	0e 94 cf 00 	call	0x19e	; 0x19e <motion_set>
+ 224:	8f ef       	ldi	r24, 0xFF	; 255
+ 226:	9f e7       	ldi	r25, 0x7F	; 127
+ 228:	a6 e1       	ldi	r26, 0x16	; 22
+ 22a:	81 50       	subi	r24, 0x01	; 1
+ 22c:	90 40       	sbci	r25, 0x00	; 0
+ 22e:	a0 40       	sbci	r26, 0x00	; 0
+ 230:	e1 f7       	brne	.-8      	; 0x22a <main+0x28>
+ 232:	00 c0       	rjmp	.+0      	; 0x234 <main+0x32>
+ 234:	00 00       	nop
+		_delay_ms(500);
+		
+		stop();
+ 236:	0e 94 f6 00 	call	0x1ec	; 0x1ec <stop>
+ 23a:	8f ef       	ldi	r24, 0xFF	; 255
+ 23c:	9f e7       	ldi	r25, 0x7F	; 127
+ 23e:	a6 e1       	ldi	r26, 0x16	; 22
+ 240:	81 50       	subi	r24, 0x01	; 1
+ 242:	90 40       	sbci	r25, 0x00	; 0
+ 244:	a0 40       	sbci	r26, 0x00	; 0
+ 246:	e1 f7       	brne	.-8      	; 0x240 <main+0x3e>
+ 248:	00 c0       	rjmp	.+0      	; 0x24a <main+0x48>
+ 24a:	00 00       	nop
+ 24c:	dc cf       	rjmp	.-72     	; 0x206 <main+0x4>
+
+0000024e <_exit>:
+ 24e:	f8 94       	cli
+
+00000250 <__stop_program>:
+ 250:	ff cf       	rjmp	.-2      	; 0x250 <__stop_program>

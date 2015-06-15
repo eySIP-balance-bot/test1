@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Atmel Studio Solution File, Format Version 11.00
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "Gyroscope_test", "Gyroscope_test\Gyroscope_test.cproj", "{F495AFF9-810B-44E9-B33F-227F4A2E9440}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|AVR = Debug|AVR
+		Release|AVR = Release|AVR
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F495AFF9-810B-44E9-B33F-227F4A2E9440}.Debug|AVR.ActiveCfg = Debug|AVR
+		{F495AFF9-810B-44E9-B33F-227F4A2E9440}.Debug|AVR.Build.0 = Debug|AVR
+		{F495AFF9-810B-44E9-B33F-227F4A2E9440}.Release|AVR.ActiveCfg = Release|AVR
+		{F495AFF9-810B-44E9-B33F-227F4A2E9440}.Release|AVR.Build.0 = Release|AVR
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
