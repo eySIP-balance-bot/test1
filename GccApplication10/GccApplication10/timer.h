@@ -46,7 +46,7 @@ void start_timer4(void)
 
 int millis(void)
 {
-	int time=0;
+	int time =0;
 	time=tot_overflow + (TCNT4-50791)/14745;
 	start_timer4();
 	return time;

@@ -17,6 +17,7 @@ double lastTime=0 ,lastTime2=0 ,lastTime3=0;
 double Input, Output;
 double errSum=0, lastErr=0 ,lastErr2=0 ,lastErr3=0;
 double kp, ki, kd;
+double outMax=255,outMin=-255;
 
 
 void Compute()
@@ -27,10 +28,26 @@ void Compute()
 	/*Compute all the working error variables*/
 	double error = Input - Setpoint;
 	errSum += (error * timeChange);//+(lastErr*lastTime)+(lastErr2*lastTime2);
+	if (errSum >= 255)
+	{
+		errSum = 255;
+	}
+	else if (errSum <= -255)
+	{
+		errSum = -255;
+	}
 	double dErr = (error - lastErr) / timeChange;
 	
 	/*Compute PID Output*/
 	Output = kp * error + ki * errSum + kd * dErr;
+	if (Output >= 255)
+	{
+		Output = 255;
+	}
+	else if (Output <= -255)
+	{
+		Output = -255;
+	}
 	
 	/*Remember some variables for next time*/
 	lastErr2=lastErr;
@@ -38,8 +55,6 @@ void Compute()
 	
 	lastTime2=lastTime;
 	lastTime = timeChange;
-	
-	
 }
 
 void motion_pin_config (void)
@@ -164,33 +179,31 @@ int main(void)
 	unsigned char pwm_value = 0;   // variable for velocity control
 	init_adxl();
 	init_devices1();
+	start_timer4();
 	
-	SetTunings(175,0.1,10000);
+	SetTunings(7,0,0);
 	while(1)
-	{
+	{    
+		
 		acc_Angle=acc_angle();
 		Input=(double)acc_Angle;
-		if (abs(Input)==41)
-		{
-			Input=0;
-		}
-		
-		stop();
-		_delay_ms(10);
+		//stop();
+		//_delay_ms(10);
 		Compute();
-		
 		if (Output>0)
 		{
-			set_PWM_value(18+Output/100);
+			set_PWM_value(Output);
 			forward();
 		}
 		else
 		{
-			set_PWM_value(18+Output/-100);
+			set_PWM_value(-Output);
 			back();
 		}
 		
 		pr_int(2,1,acc_Angle,3);
 		pr_int(1,1,Output,5);
+		
+		
 	}
 }
