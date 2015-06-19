@@ -20,7 +20,8 @@ double kp, ki, kd;
 double outMax=255,outMin=-255;
 unsigned char data; //to store received data from UDR0
 double para=0;
-
+int para_flag=0;
+double error =0;
 
 
 
@@ -30,7 +31,7 @@ void Compute()
 	double timeChange = (double)millis();
 	
 	/*Compute all the working error variables*/
-	double error = Input - Setpoint;
+	error = Input - Setpoint;
 	errSum += (error * timeChange);//+(lastErr*lastTime)+(lastErr2*lastTime2);
 	if (errSum >= 255)
 	{
@@ -44,14 +45,14 @@ void Compute()
 	
 	/*Compute PID Output*/
 	Output = kp * error + ki * errSum + kd * dErr;
-	if (Output >= 255)
-	{
-		Output = 255;
-	}
-	else if (Output <= -255)
-	{
-		Output = -255;
-	}
+// 	if (Output >= 255)
+// 	{
+// 		Output = 255;
+// 	}
+// 	else if (Output <= -255)
+// 	{
+// 		Output = -255;
+// 	}
 	
 	/*Remember some variables for next time*/
 	lastErr2=lastErr;
@@ -85,14 +86,18 @@ ISR(USART0_RX_vect)
 	if (data == 55)
 	{
 		para = kp;
+		para_flag=1;
+		
 	}
 	else if (data == 56)
 	{
 		para = ki;
+		para_flag=2;
 	}
 	else if (data == 57)
 	{
 		para = kd;
+		para_flag=3;
 	}
 	
 	
@@ -123,23 +128,25 @@ ISR(USART0_RX_vect)
 	
 	
 	
-	if (data == 55)
+	if (para_flag == 1)
 	{
 		kp = para;
 		lcd_print(1,1,kp*10,4);
 	}
-	else if (data == 56)
+	else if (para_flag == 2)
 	{
 		ki = para;
 		lcd_print(1,6,ki*10,4);
 	}
-	else if (data == 57)
+	else if (para_flag == 3)
 	{
 		kd = para;
 		lcd_print(1,11,kd*10,4);
 	}
 	
 }
+
+
 
 
 
@@ -251,6 +258,13 @@ void init_devices1 (void)
 	sei(); //Enables the global interrupts
 }
 
+uint32_t min(uint32_t a, uint32_t b)
+{
+	if(a < b)
+		return a;
+	else
+		return b;
+}
 
 void SetTunings(double Kp, double Ki, double Kd)
 {
@@ -278,22 +292,26 @@ int main(void)
 		
 		acc_Angle=acc_angle();
 		Input=(double)acc_Angle;
-		stop();
-		_delay_ms(10);
+		if (error*lastErr < 0)
+		{
+		
+			stop();
+			_delay_ms(10);
+		}		
 		Compute();
 		if (Output>0)
 		{
-			set_PWM_value(Output);
+			set_PWM_value(min((Output*Output),255));
 			forward();
 			//_delay_ms(10);
 		}
 		else
 		{
-			set_PWM_value(-Output);
+			set_PWM_value(min(Output*Output,255));
 			back();
 			//_delay_ms(10);
 		}
-		_delay_ms(30);
+		//_delay_ms(30);
 		
 		
 		//pr_int(2,1,acc_Angle,3);
