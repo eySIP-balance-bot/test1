@@ -282,7 +282,7 @@ int main(void)
 	uart0_init(); //Initailize UART1 for serial communiaction
 	start_timer4();
 	
-	SetTunings(100,0,0);
+	SetTunings(21,0.9,0);
 	lcd_print(1,1,kp*10,4);
 	lcd_print(1,6,ki*10,4);
 	lcd_print(1,11,kd*10,4);
