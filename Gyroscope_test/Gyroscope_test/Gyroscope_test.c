@@ -37,6 +37,7 @@
 #include <util/delay.h>
 
 #include "lcd.c"
+#include "timer.h"
 
 
 #define	SLA_W	0xD2             // Write address for DS1307 selection for writing	
@@ -124,45 +125,45 @@ unsigned char read_byte(unsigned char address)
  
 TWCR = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN);      // send START condition  
 while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
- _delay_ms(10);
+ //_delay_ms(10);
 
  
 
  TWDR = SLA_W;									   // load SLA_W into TWDR Register
  TWCR  = (1<<TWINT) | (1<<TWEN);                   // clear TWINT flag to start tramnsmission of slave address 
  while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
- _delay_ms(10); 
+ //_delay_ms(10); 
 
  TWDR = address;                                   // send address of register byte want to access register
  TWCR  = (1<<TWINT) | (1<<TWEN);                   // clear TWINT flag to start tramnsmission of slave address 
  while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
- _delay_ms(10);
+// _delay_ms(10);
  
 
 
  TWCR = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN);       // send RESTART condition
  while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
- _delay_ms(10);
+ //_delay_ms(10);
 
 
  
  TWDR = SLA_R;									   // load SLA_R into TWDR Register
  TWCR  = (1<<TWINT) | (0<<TWSTA) | (1<<TWEN);      // clear TWINT flag to start tramnsmission of slave address 
  while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
- _delay_ms(10);
+ //_delay_ms(10);
  
  
 
  TWCR  = (1<<TWINT) | (1<<TWEN);                   // clear TWINT flag to read the addressed register
  while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
  rtc_recv_data = TWDR;
- _delay_ms(10);
+ //_delay_ms(10);
  
 
  TWDR = 00;                                        // laod the NO-ACK value to TWDR register 
  TWCR  = (1<<TWINT) | (1<<TWEN);                   // clear TWINT flag to start tramnsmission of NO_ACK signal
  while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
- _delay_ms(10);
+ //_delay_ms(10);
   
  return(rtc_recv_data);                            // return the read value to called function
 }
@@ -198,15 +199,29 @@ int btod(int n) /* Function to convert binary to decimal.*/
 	}
 	return decimal;
 }
-void pr_int(int a,int b,uint16_t c,int d) /* get negative values*/
+int sign(uint16_t c) /* get negative values*/
 {
-	if (c>34000)
+	if (c>32767)
+	{
+		c -= 65536;
+	    return c;
+	} 
+	else
+	{
+		return c;
+	}
+}
+
+
+
+void pr_int(int a,int b,int c,int d) /* get negative values*/
+{
+	if (c<0)
 	{
 		lcd_cursor(a,b);
 		lcd_string("-");
-		c = 65536 -c;
-		lcd_print(a,b+1,c,d);
-	} 
+		lcd_print(a,b+1,abs(c),d);
+	}
 	else
 	{
 		lcd_cursor(a,b);
@@ -219,9 +234,9 @@ void pr_int(int a,int b,uint16_t c,int d) /* get negative values*/
 //-------------------------------------------------------------------------------
 int main(void)
 {   
-  uint16_t x_byte = 0,y_byte = 0,z_byte = 0;
+  uint16_t x_byte = 0,y_byte = 0,z_byte = 0,x_ang=0;
   uint8_t x_byte1 = 0,x_byte2 = 0,y_byte1 = 0,y_byte2 = 0,z_byte1 = 0,z_byte2 = 0;
-  //int accl_angle =0;
+  int gy_angle =0,gy_sum=0;
 
  init_devices();
  lcd_set_4bit();                // set the LCD in 4 bit mode
@@ -229,6 +244,7 @@ int main(void)
  display_clear();               // clear the LCD
  write_byte(0x0F,0x20);
  //write_byte(0x8,0x2D);
+start_timer4();
 
  
 while(1)
@@ -252,30 +268,32 @@ while(1)
 	   
 	   z_byte2 = read_byte(ZH);
 	   //lcd_print(2,10,z_byte2,3);
-	   _delay_ms(100);
 	   
 	   x_byte = x_byte2;   // to print 10 bit integer value on LCD
 	   x_byte = (x_byte << 8);
 	   x_byte |= x_byte1;
+	   x_ang = sign(x_byte);
 	   //lcd_print(1,1,x_byte,5);
-	   pr_int(1,1,x_byte,5);
+	   //pr_int(1,1,x_byte,5);
 	   
-	   y_byte = y_byte2;
+	   /*y_byte = y_byte2;
 	   y_byte = (y_byte << 8);
 	   y_byte |= y_byte1;
 	   //lcd_print(2,5,y_byte,5);
-	   pr_int(2,4,y_byte,5);
+	   //pr_int(2,4,y_byte,5);
 	   
 	   z_byte = z_byte2;
 	   z_byte = (z_byte << 8);
 	   z_byte |= z_byte1;
 	   //lcd_print(1,10,z_byte,5);
-	   pr_int(1,9,z_byte,5);
-	   
-	   //accl_angle = arctan((y_byte)/sqrt((x_byte^2)+(y_byte^2)));  */
-	   
-	 	   
-}
+	   //pr_int(1,9,z_byte,5);*/
+	   int timechange=millis();
+	   gy_angle = (x_ang*timechange);
+	   gy_sum += gy_angle;
+	   pr_int(1,1,gy_sum,3);
+	   gy_sum = gy_angle;
+	   _delay_ms(100);
+	  }
 }
 
 //--------------------------------------------------------------------------------

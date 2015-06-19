@@ -18,6 +18,10 @@ double Input, Output;
 double errSum=0, lastErr=0 ,lastErr2=0 ,lastErr3=0;
 double kp, ki, kd;
 double outMax=255,outMin=-255;
+unsigned char data; //to store received data from UDR0
+double para=0;
+
+
 
 
 void Compute()
@@ -57,6 +61,88 @@ void Compute()
 	lastTime = timeChange;
 }
 
+
+//Function To Initialize UART0
+// desired baud rate:9600
+// actual baud rate:9600 (error 0.0%)
+// char size: 8 bit
+// parity: Disabled
+void uart0_init(void)
+{
+	UCSR0B = 0x00; //disable while setting baud rate
+	UCSR0A = 0x00;
+	UCSR0C = 0x06;
+	// UBRR0L = 0x47; //11059200 Hz
+	UBRR0L = 0x5F; // 14745600 Hzset baud rate lo
+	UBRR0H = 0x00; //set baud rate hi
+	UCSR0B = 0x98;
+}
+
+ISR(USART0_RX_vect)
+{
+	data = UDR0;
+	//UDR0=data;
+	if (data == 55)
+	{
+		para = kp;
+	}
+	else if (data == 56)
+	{
+		para = ki;
+	}
+	else if (data == 57)
+	{
+		para = kd;
+	}
+	
+	
+	if (data==49)
+	{
+		para++;
+	}
+	else if (data==50)
+	{
+		para += 5;
+	}
+	else if (data==52)
+	{
+		para--;
+	}
+	else if (data==53)
+	{
+		para -= 5;
+	}
+	else if (data == 51)
+	{
+		para += 0.1;
+	}
+	else if (data == 54)
+	{
+		para -=0.1;
+	}
+	
+	
+	
+	if (data == 55)
+	{
+		kp = para;
+		lcd_print(1,1,kp*10,4);
+	}
+	else if (data == 56)
+	{
+		ki = para;
+		lcd_print(1,6,ki*10,4);
+	}
+	else if (data == 57)
+	{
+		kd = para;
+		lcd_print(1,11,kd*10,4);
+	}
+	
+}
+
+
+
 void motion_pin_config (void)
 {
 	DDRL = DDRL | 0xE4;    //set direction of the PORTL2.5,6,7 pins as output
@@ -94,7 +180,7 @@ void set_PWM_value(unsigned char value) 	//set 8 bit PWM value
 	OCR5AH = 0x00;
 	OCR5AL = value;
 	OCR5BH = 0x00;
-	OCR5BL = value+4;
+	OCR5BL = value;
 }
 
 //Function used for setting motor's direction
@@ -179,30 +265,39 @@ int main(void)
 	unsigned char pwm_value = 0;   // variable for velocity control
 	init_adxl();
 	init_devices1();
+	uart0_init(); //Initailize UART1 for serial communiaction
 	start_timer4();
 	
-	SetTunings(7,0,0);
+	SetTunings(100,0,0);
+	lcd_print(1,1,kp*10,4);
+	lcd_print(1,6,ki*10,4);
+	lcd_print(1,11,kd*10,4);
+	
 	while(1)
 	{    
 		
 		acc_Angle=acc_angle();
 		Input=(double)acc_Angle;
-		//stop();
-		//_delay_ms(10);
+		stop();
+		_delay_ms(10);
 		Compute();
 		if (Output>0)
 		{
 			set_PWM_value(Output);
 			forward();
+			//_delay_ms(10);
 		}
 		else
 		{
 			set_PWM_value(-Output);
 			back();
+			//_delay_ms(10);
 		}
+		_delay_ms(30);
 		
-		pr_int(2,1,acc_Angle,3);
-		pr_int(1,1,Output,5);
+		
+		//pr_int(2,1,acc_Angle,3);
+		//pr_int(1,1,Output,5);
 		
 		
 	}

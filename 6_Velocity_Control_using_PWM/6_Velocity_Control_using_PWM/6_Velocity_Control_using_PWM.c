@@ -86,6 +86,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
+#include "lcd.c"
 
 //Function to configure ports to enable robot's motion
 void motion_pin_config (void) 
@@ -95,11 +96,17 @@ void motion_pin_config (void)
  DDRL = DDRL | 0x18;   //Setting PL3 and PL4 pins as output for PWM generation
  PORTL = PORTL | 0x18; //PL3 and PL4 pins are for velocity control using PWM.
 }
+void lcd_port_config (void)
+{
+	DDRC = DDRC | 0xF7; //all the LCD pin's direction set as output
+	PORTC = PORTC & 0x80; // all the LCD pins are set to logic 0 except PORTC 7
+}
 
 //Function to initialize ports
 void init_ports()
 {
  motion_pin_config();
+ lcd_port_config ();
 }
 
 // Timer 5 initialized in PWM mode for velocity control
@@ -109,8 +116,8 @@ void init_ports()
 void timer5_init()
 {
 	TCCR5B = 0x00;	//Stop
-	TCNT5H = 0xFF;	//Counter higher 8-bit value to which OCR5xH value is compared with
-	TCNT5L = 0x03;	//Counter lower 8-bit value to which OCR5xH value is compared with
+	TCNT5H = 0xFC;	//Counter higher 8-bit value to which OCR5xH value is compared with
+	TCNT5L = 0x00;	//Counter lower 8-bit value to which OCR5xH value is compared with
 	OCR5AH = 0x03;	//Output compare register high value for Left Motor
 	OCR5AL = 0xFF;	//Output compare register low value for Left Motor
 	OCR5BH = 0x03;	//Output compare register high value for Right Motor
@@ -125,10 +132,12 @@ void timer5_init()
 }
 
 // Function for robot velocity control
-void velocity (unsigned int left_motor, unsigned int right_motor)
-{
+void velocity (uint16_t left_motor, uint16_t right_motor)
+{  
 	OCR5A = (unsigned int)left_motor;
 	OCR5B = (unsigned int)right_motor;
+	lcd_print(1,1,OCR5A,5);
+	lcd_print(2,1,OCR5B,5);
 }
 
 //Function used for setting motor's direction
@@ -201,21 +210,19 @@ void init_devices (void) //use this function to initialize all devices
 int main()
 {
 	init_devices();
+	lcd_set_4bit();
+	lcd_init();
 	  
 	while(1)
-	{
-		velocity (1023, 1023); //Smaller the value lesser will be the velocity.Try different valuse between 0 to 255
+	{   
+		for(i=0;i<1024;i++)
+		{
+		velocity (i, i); //Smaller the value lesser will be the velocity.Try different valuse between 0 to 255
 		forward(); //both wheels forward
-		_delay_ms(3000);
+		_delay_ms(10);
+		}		
 
 		stop();						
-		_delay_ms(500);
-	
-		velocity (5000, 5000);
-		forward(); //both wheels backward						
-		_delay_ms(3000);
-		
-		stop();
 		_delay_ms(500);
 		
 		/*velocity (500, 500); //Smaller the value lesser will be the velocity.Try different valuse between 0 to 255

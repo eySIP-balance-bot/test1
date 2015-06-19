@@ -141,9 +141,9 @@ ISR(TIMER4_OVF_vect)
 
 int micro_sec(void)
 {
-	int time=0;
+	int time;
 	time=1000*(count + (TCNT4-50791)/14745);
-	start_timer4();
+	//start_timer4();
 	return time;
 }	
 
@@ -158,13 +158,17 @@ void init_devices(void)
 int main(void)
 {   
 	int t = 0;
+	uint i=65535;
 	init_devices();
 	lcd_set_4bit();
 	lcd_init();
 	start_timer4();
-	_delay_ms(60);
+	_delay_ms(70);
 	t=micro_sec();
-	lcd_print(1,3,t,5);
+	
+	lcd_print(1,3,i,5);
+	
+	
 }
 
 
