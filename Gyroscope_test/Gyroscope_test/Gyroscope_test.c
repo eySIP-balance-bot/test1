@@ -53,7 +53,7 @@
 #define YH   0x2B
 #define ZL	 0x2C
 #define ZH   0x2D
-
+#define  K   10
 
 
 //------------------------------------------------------------------------------
@@ -216,7 +216,7 @@ int main(void)
 {   
   uint16_t x_byte = 0,y_byte = 0,z_byte = 0;
   uint8_t x_byte1 = 0,x_byte2 = 0,y_byte1 = 0,y_byte2 = 0,z_byte1 = 0,z_byte2 = 0;
-  int gy_angle =0,gy_sum=0;
+  double gy_angle =0,gy_sum=0;
   int16_t x_ang=0;
 
  //init_devices();
@@ -224,7 +224,7 @@ int main(void)
 //  lcd_set_4bit();                // set the LCD in 4 bit mode
 //  lcd_init();                    // initialize the LCD with its commands
 //  display_clear();               // clear the LCD
- write_byte_gyro(0x0F,0x20);
+ write_byte_gyro(0x0F,0x20);       //Normal mode of control reg.1
  //write_byte(0x8,0x2D);
 start_timer4();
 
@@ -255,10 +255,10 @@ while(1)
 	   x_byte = (x_byte << 8);
 	   x_byte |= x_byte1;
 	   x_ang = sign(x_byte);
-	   x_ang /=100;
+	   //x_ang /=100;
 	   
 	   //lcd_print(1,1,x_byte,5);
-	   pr_int(1,1,x_ang,3);
+	   //pr_int(1,1,x_ang,3);
 	   
 	   /*y_byte = y_byte2;
 	   y_byte = (y_byte << 8);
@@ -271,16 +271,17 @@ while(1)
 	   z_byte |= z_byte1;
 	   //lcd_print(1,10,z_byte,5);
 	   //pr_int(1,9,z_byte,5);*/
-	   /*int timechange=millis();
-	   timechange /= 100;
+	   double timechange=micros();
+	   timechange /= 1000;
 	   gy_angle = (x_ang*timechange);
-	   pr_int(2,10,gy_angle,3);
-	   gy_sum +=gy_angle;*/
+	   //pr_int(2,10,gy_angle,3);
+	   gy_sum +=gy_angle;
+	   gy_sum /= 100*K;
 	   
-	    gy_sum = gy_angle+x_ang;
+	    //gy_sum = gy_angle+x_ang;
         pr_int(2,1,gy_sum,3);
-	    pr_int(1,10,acc_angle(),3);
-		gy_angle = gy_sum;
+	    pr_int(1,1,acc_angle(),3);
+		//gy_angle = gy_sum;
 		//_delay_ms(100);
 	  
 	  }

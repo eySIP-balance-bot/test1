@@ -45,14 +45,14 @@ void Compute()
 	
 	/*Compute PID Output*/
 	Output = kp * error + ki * errSum + kd * dErr;
-// 	if (Output >= 255)
-// 	{
-// 		Output = 255;
-// 	}
-// 	else if (Output <= -255)
-// 	{
-// 		Output = -255;
-// 	}
+ 	if (Output >= 255)
+ 	{
+ 		Output = 255;
+ 	}
+ 	else if (Output <= -255)
+ 	{
+ 		Output = -255;
+ 	}
 	
 	/*Remember some variables for next time*/
 	lastErr2=lastErr;
@@ -298,17 +298,19 @@ int main(void)
 			stop();
 			_delay_ms(10);
 		}	
-		ki *= 0.1;	
+		//ki *= 0.1;	
 		Compute();
 		if (Output>0)
 		{
-			set_PWM_value(min((Output*Output),255));
+			//set_PWM_value(min((Output*Output),255));
+			set_PWM_value(Output);
 			forward();
 			//_delay_ms(10);
 		}
-		else
+		else if(Output<0)
 		{
-			set_PWM_value(min(Output*Output,255));
+			//set_PWM_value(min(Output*Output,255));
+			set_PWM_value(-Output);
 			back();
 			//_delay_ms(10);
 		}
