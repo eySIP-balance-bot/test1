@@ -297,7 +297,8 @@ int main(void)
 		
 			stop();
 			_delay_ms(10);
-		}		
+		}	
+		ki *= 0.1;	
 		Compute();
 		if (Output>0)
 		{

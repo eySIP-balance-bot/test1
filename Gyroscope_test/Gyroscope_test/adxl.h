@@ -35,34 +35,34 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
+#include <math.h>
 
-#include "timer.h"
-#include "adxl.h"
+#include "lcd.c"
 
 
-#define	SLAVE_W	0xD2             // Write address for DS1307 selection for writing	
-#define	SLAVE_R	0xD3             // Write address for DS1307 selection for reading  
+#define	SLA_W	0xA6             // Write address for DS1307 selection for writing	
+#define	SLA_R	0xA7             // Write address for DS1307 selection for reading  
 
 //------------------------------------------------------------------------------
-// define Gyroscope register addresses
+// define ADXL345 register addresses
 //------------------------------------------------------------------------------
+#define X1	 0x32            
+#define X2 	 0x33
+#define Y1 	 0x34
+#define Y2   0x35
+#define Z1 	 0x36
+#define Z2   0x37
 
-#define XL   0x28      
-#define XH	 0x29
-#define YL	 0x2A
-#define YH   0x2B
-#define ZL	 0x2C
-#define ZH   0x2D
 
 
 
 //------------------------------------------------------------------------------
 //Function to configure LCD port
-// void lcd_port_config (void)
-// {
-//  DDRC = DDRC | 0xF7;      //all the LCD pin's direction set as output
-//  PORTC = PORTC & 0x80;    // all the LCD pins are set to logic 0 except PORTC 7
-// }
+void lcd_port_config (void)
+{
+ DDRC = DDRC | 0xF7;      //all the LCD pin's direction set as output
+ PORTC = PORTC & 0x80;    // all the LCD pins are set to logic 0 except PORTC 7
+}
 
 //------------------------------------------------------------------------------
 // I2C Peripheral Function Prototypes
@@ -73,14 +73,14 @@
 
 //TWI initialize
 // bit rate:72
-// void twi_init(void)
-// {
-//  TWCR = 0x00;   //disable twi
-//  TWBR = 0x10; //set bit rate
-//  TWSR = 0x00; //set prescale
-//  TWAR = 0x00; //set slave address
-//  TWCR = 0x04; //enable twi
-// }
+void twi_init(void)
+{
+ TWCR = 0x00;   //disable twi
+ TWBR = 0x10; //set bit rate
+ TWSR = 0x00; //set prescale
+ TWAR = 0x00; //set slave address
+ TWCR = 0x04; //enable twi
+}
 
 //------------------------------------------------------------------------------
 // Procedure:	write_byte 
@@ -88,13 +88,13 @@
 // Outputs:		none
 // Description:	Writes a byte to the RTC given the address register 
 //------------------------------------------------------------------------------
-void write_byte_gyro(unsigned char data_out,unsigned char address)
+void write_byte(unsigned char data_out,unsigned char address)
 {
  TWCR = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN);       // send START condition  
  while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
  _delay_ms(10);                                    
 
- TWDR = SLAVE_W;                                     // load SLA_W into TWDR Register
+ TWDR = SLA_W;                                     // load SLA_W into TWDR Register
  TWCR  = (1<<TWINT) | (0<<TWSTA) | (1<<TWEN);      // clear TWINT flag to start tramnsmission of slave address 
  while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
  _delay_ms(10);
@@ -118,173 +118,159 @@ void write_byte_gyro(unsigned char data_out,unsigned char address)
 // Outputs:		none
 // Description:	read a byte from the RTC from send the address register 
 //------------------------------------------------------------------------------
-unsigned char read_byte_gyro(unsigned char address)
+unsigned char read_byte(unsigned char address)
 {  
  unsigned char rtc_recv_data;
 
  
 TWCR = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN);      // send START condition  
 while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
- //_delay_ms(10);
 
  
 
- TWDR = SLAVE_W;									   // load SLA_W into TWDR Register
+ TWDR = SLA_W;									   // load SLA_W into TWDR Register
  TWCR  = (1<<TWINT) | (1<<TWEN);                   // clear TWINT flag to start tramnsmission of slave address 
  while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
- //_delay_ms(10); 
 
  TWDR = address;                                   // send address of register byte want to access register
  TWCR  = (1<<TWINT) | (1<<TWEN);                   // clear TWINT flag to start tramnsmission of slave address 
  while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
-// _delay_ms(10);
  
 
 
  TWCR = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN);       // send RESTART condition
  while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
- //_delay_ms(10);
 
 
  
- TWDR = SLAVE_R;									   // load SLA_R into TWDR Register
+ TWDR = SLA_R;									   // load SLA_R into TWDR Register
  TWCR  = (1<<TWINT) | (0<<TWSTA) | (1<<TWEN);      // clear TWINT flag to start tramnsmission of slave address 
  while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
- //_delay_ms(10);
+ 
  
  
 
  TWCR  = (1<<TWINT) | (1<<TWEN);                   // clear TWINT flag to read the addressed register
  while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
  rtc_recv_data = TWDR;
- //_delay_ms(10);
  
-
  TWDR = 00;                                        // laod the NO-ACK value to TWDR register 
  TWCR  = (1<<TWINT) | (1<<TWEN);                   // clear TWINT flag to start tramnsmission of NO_ACK signal
  while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
- //_delay_ms(10);
   
  return(rtc_recv_data);                            // return the read value to called function
 }
 
 
 // initialise the devices 
-// void init_devices()
-// {
-//  cli();              // disable all interrupts 
-//  //lcd_port_config();  // configure the LCD port 
-//  twi_init();         // configur the I2cC, i.e TWI module 
-//  sei();              // re-enable interrupts
-//  //all peripherals are now initialized
-// }
+void init_devices()
+{
+ cli();              // disable all interrupts 
+ lcd_port_config();  // configure the LCD port 
+ lcd_set_4bit();
+ lcd_init();
+ twi_init();         // configur the I2cC, i.e TWI module 
+ sei();              // re-enable interrupts
+ //all peripherals are now initialized
+}
 
-// int sign(uint16_t c) /* get negative values*/
-// {
-// 	if (c>32767)
-// 	{
-// 		c -= 65536;
-// 	    return c;
-// 	} 
-// 	else
-// 	{
-// 		return c;
-// 	}
-// }
+void pr_int(int a,int b,int c,int d) /* get negative values*/
+{
+	if (c<0)
+	{
+		lcd_cursor(a,b);
+		lcd_string("-");
+		lcd_print(a,b+1,abs(c),d);
+	} 
+	else
+	{
+		lcd_cursor(a,b);
+		lcd_string("+");
+		lcd_print(a,b+1,c,d);
+	}
+}
 
-
-// 
-// void pr_int(int a,int b,int c,int d) /* get negative values*/
-// {
-// 	if (c<0)
-// 	{
-// 		lcd_cursor(a,b);
-// 		lcd_string("-");
-// 		lcd_print(a,b+1,abs(c),d);
-// 	}
-// 	else
-// 	{
-// 		lcd_cursor(a,b);
-// 		lcd_string("+");
-// 		lcd_print(a,b+1,c,d);
-// 	}
-// }
+int sign (unsigned int n)
+{
+	if (n>32767)
+	{
+		return (n-65536);
+	}
+	else
+		return n;
+		
+}
 //-------------------------------------------------------------------------------
 // Main Programme start here.
 //-------------------------------------------------------------------------------
-int main(void)
+void init_adxl(void)
 {   
-  uint16_t x_byte = 0,y_byte = 0,z_byte = 0;
-  uint8_t x_byte1 = 0,x_byte2 = 0,y_byte1 = 0,y_byte2 = 0,z_byte1 = 0,z_byte2 = 0;
-  int gy_angle =0,gy_sum=0;
-  int16_t x_ang=0;
-
- //init_devices();
- init_adxl();
-//  lcd_set_4bit();                // set the LCD in 4 bit mode
-//  lcd_init();                    // initialize the LCD with its commands
-//  display_clear();               // clear the LCD
- write_byte_gyro(0x0F,0x20);
- //write_byte(0x8,0x2D);
-start_timer4();
-
  
-while(1)
+ init_devices();
+
+	write_byte(0x0,0x2D);
+	write_byte(0x8,0x2D);
+}
+
+int acc_angle(void)
 {
+	    uint16_t x_byte = 0,y_byte = 0,z_byte = 0;
+		uint8_t x_byte1 = 0,x_byte2 = 0,y_byte1 = 0,y_byte2 = 0,z_byte1 = 0,z_byte2 = 0;
+		int x_acc,y_acc,z_acc;
+		//long x,y,z;
+		float angle;
+ 
+	  
+	   x_byte1 = read_byte(X1);
+	   //x_byte1=(x_byte1*1000)/256;
+	   //lcd_print(1,1,x_byte1,3);
 	   
+	   x_byte2 = read_byte(X2);
+	   //lcd_print(2,1,abs(x_byte2),3);
 	   
-	  x_byte1 = read_byte_gyro(XL);
-	  //lcd_print(1,1,x_byte1,3);
-	   
-	   x_byte2 = read_byte_gyro(XH);
-	   //lcd_print(2,1,x_byte2,3);
-	   
-	   y_byte1 = read_byte_gyro(YL);
+	   y_byte1 = read_byte(Y1);
 	   //lcd_print(1,6,y_byte1,3);
 	   
-	   y_byte2 = read_byte_gyro(YH);
+	   y_byte2 = read_byte(Y2);
 	   //lcd_print(2,6,y_byte2,3);
 	   
-	   z_byte1 = read_byte_gyro(ZL);
+	   z_byte1 = read_byte(Z1);
 	   //lcd_print(1,10,z_byte1,3);
 	   
-	   z_byte2 = read_byte_gyro(ZH);
+	   z_byte2 = read_byte(Z2);
 	   //lcd_print(2,10,z_byte2,3);
-	   
-	   x_byte = x_byte2;   // to print 10 bit integer value on LCD
-	   x_byte = (x_byte << 8);
-	   x_byte |= x_byte1;
-	   x_ang = sign(x_byte);
-	   x_ang /=100;
-	   
-	   //lcd_print(1,1,x_byte,5);
-	   pr_int(1,1,x_ang,3);
-	   
-	   /*y_byte = y_byte2;
-	   y_byte = (y_byte << 8);
-	   y_byte |= y_byte1;
-	   //lcd_print(2,5,y_byte,5);
-	   //pr_int(2,4,y_byte,5);
-	   
-	   z_byte = z_byte2;
-	   z_byte = (z_byte << 8);
-	   z_byte |= z_byte1;
-	   //lcd_print(1,10,z_byte,5);
-	   //pr_int(1,9,z_byte,5);*/
-	   /*int timechange=millis();
-	   timechange /= 100;
-	   gy_angle = (x_ang*timechange);
-	   pr_int(2,10,gy_angle,3);
-	   gy_sum +=gy_angle;*/
-	   
-	    gy_sum = gy_angle+x_ang;
-        pr_int(2,1,gy_sum,3);
-	    pr_int(1,10,acc_angle(),3);
-		gy_angle = gy_sum;
-		//_delay_ms(100);
+	    
+	   //x_byte2 &= 0x03;
 	  
-	  }
+	  x_byte=x_byte2;
+	  x_byte = (x_byte << 8);
+	  x_byte |= x_byte1;
+	  x_acc=sign(x_byte);
+	  
+	  //pr_int(1,1,x_byte,3); 
+	  
+	  y_byte=y_byte2;
+	  y_byte = (y_byte << 8);
+	  y_byte |= y_byte1;
+	  y_acc=sign(y_byte);
+	  
+	  //pr_int(2,5,y_byte,3); 	
+	  
+	  z_byte=z_byte2;
+	  z_byte = (z_byte << 8);
+	  z_byte |= z_byte1;
+	  z_acc=sign(z_byte);
+	  
+	  
+	  //pr_int(1,10,z_byte,3);  
+	  
+	  angle=(atan((y_acc*1.0)/(z_acc*1.0)));
+	  angle *= 180.0/3.14;
+	  //pr_int(1,1,angle,3);
+	  
+	return angle;
 }
+
 
 //--------------------------------------------------------------------------------
 
