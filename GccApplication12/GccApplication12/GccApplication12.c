@@ -5,8 +5,8 @@
 #include <util/delay.h>
 
 #include "timer.h"
-//#include "lcd.c"
 #include "adxl.h"
+#include "gyro.h"
 
 #define Setpoint 0
 
@@ -44,14 +44,14 @@ void Compute()
 	
 	/*Compute PID Output*/
 	Output = kp * error + ki * errSum + kd * dErr;
- 	if (Output >= 220)
- 	{
- 		Output = 220;
- 	}
- 	else if (Output <= -220)
- 	{
- 		Output = -220;
- 	}
+	if (Output >= 255)
+	{
+		Output = 255;
+	}
+	else if (Output <= -255)
+	{
+		Output = -255;
+	}
 	
 	/*Remember some variables for next time*/
 	lastErr3 = lastErr2;
@@ -266,31 +266,36 @@ void SetTunings(double Kp, double Ki, double Kd)
 int main(void)
 {
 	int acc_Angle;
+	int gyro_Angle;
+	int filt_Angle;
 	unsigned int pwm_value;
 	init_adxl();
+	init_gyro();
 	init_devices1();
 	uart0_init(); //Initailize UART1 for serial communiaction
 	//start_timer4();
 	
-	SetTunings(3,0,0);
+	SetTunings(6,0,0);
 	lcd_print(1,1,kp*10,4);
 	lcd_print(1,6,ki*10,4);
 	lcd_print(1,11,kd*10,4);
 	
 	while(1)
-	{    
+	{
 		
 		acc_Angle=0.1*acc_angle();
+		//pr_int(2,1,acc_Angle,3);
+		gyro_Angle=gyro_Rate();
+		filt_Angle=comp_filter(acc_Angle,gyro_Angle);
 		//UDR0=(int8_t)acc_angle();
 		//UDR0=(int8_t)(acc_Angle+100);
-		Input=acc_Angle;
-		//pr_int(1,10,Input,3);
+		Input=filt_Angle;
+		pr_int(1,1,Input,3);
 		if (error*lastErr < 0)
-		{		
+		{
 			stop();
 			_delay_ms(10);
-		}	
-		//ki *= 0.1;	*/
+		}
 		Compute();
 		if (Output>0)
 		{
@@ -306,9 +311,9 @@ int main(void)
 			forward();
 			_delay_ms(10);
 			//pwm_value=0;
-		    }
+		}
 		else if(Output<0)
-		    {
+		{
 			//set_PWM_value(min(Output*Output,255));
 			pwm_value = (-Output)+30;
 			if(pwm_value>=255)
@@ -322,11 +327,11 @@ int main(void)
 			_delay_ms(10);
 			//pwm_value=0;
 		}
-		 else if(Output==0)
-		 {
-			 stop();
-			 _delay_ms(10);
-		 }
-		_delay_ms(40);
-		}	
+		else if(Output==0)
+		{
+			stop();
+			_delay_ms(10);
+		}
+		_delay_ms(40); 
+	}
 }

@@ -36,7 +36,6 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
-#include "timer.h"
 #include "adxl.h"
 
 
@@ -53,36 +52,8 @@
 #define YH   0x2B
 #define ZL	 0x2C
 #define ZH   0x2D
-#define  K   10
-#define LPF  0.02
-#define HPF  0.98
 
 
-//------------------------------------------------------------------------------
-//Function to configure LCD port
-// void lcd_port_config (void)
-// {
-//  DDRC = DDRC | 0xF7;      //all the LCD pin's direction set as output
-//  PORTC = PORTC & 0x80;    // all the LCD pins are set to logic 0 except PORTC 7
-// }
-
-//------------------------------------------------------------------------------
-// I2C Peripheral Function Prototypes
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-// I2C initilise
-//------------------------------------------------------------------------------
-
-//TWI initialize
-// bit rate:72
-// void twi_init(void)
-// {
-//  TWCR = 0x00;   //disable twi
-//  TWBR = 0x10; //set bit rate
-//  TWSR = 0x00; //set prescale
-//  TWAR = 0x00; //set slave address
-//  TWCR = 0x04; //enable twi
-// }
 
 //------------------------------------------------------------------------------
 // Procedure:	write_byte 
@@ -170,8 +141,15 @@ while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
  return(rtc_recv_data);                            // return the read value to called function
 }
 
+void init_gyro(void)
+{   
+ 
+
+	 write_byte_gyro(0x0F,0x20);       //Normal mode of control reg.1
+}
+
 //Complementary filter
-float comp_filter(float newAngle,  float newRate) 
+float comp_filter(float acc_Angle,  float gyro_Rate) 
 {   
 	static float filterAngle;
 	float dt=0.01;
@@ -193,21 +171,14 @@ float comp_filter(float newAngle,  float newRate)
 //-------------------------------------
 // Main Programme start here.
 //-------------------------------------------------------------------------------
-int main(void)
+float gyro_Rate(void)
 {   
-  uint16_t x_byte = 0,y_byte = 0,z_byte = 0;
-  uint8_t x_byte1 = 0,x_byte2 = 0,y_byte1 = 0,y_byte2 = 0,z_byte1 = 0,z_byte2 = 0;
+  uint16_t x_byte = 0;
+  uint8_t x_byte1 = 0,x_byte2 = 0;
   double gy_angle =0,gy_sum=0;
   int16_t x_ang=0;
   int filt_ang=0;
-
  
- init_adxl();
- write_byte_gyro(0x0F,0x20);       //Normal mode of control reg.1
-
- 
-while(1)
-{
 	   
 	   
 	  x_byte1 = read_byte_gyro(XL);
@@ -221,11 +192,7 @@ while(1)
 	   x_byte |= x_byte1;
 	   x_ang = sign(x_byte);
 	   x_ang /=100;
-	   pr_int(1,1,acc_angle(),3);	   
-	   filt_ang = comp_filter(acc_angle(),x_ang);
-	   pr_int(1,10,filt_ang,3);
-	  
-	  }
+	   return x_ang;
 }
 
 
