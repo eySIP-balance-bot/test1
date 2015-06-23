@@ -290,7 +290,7 @@ int main(void)
 		//UDR0=(int8_t)acc_angle();
 		//UDR0=(int8_t)(acc_Angle+100);
 		Input=filt_Angle;
-		pr_int(1,1,Input,3);
+		//pr_int(1,1,Input,3);
 		if (error*lastErr < 0)
 		{
 			stop();
@@ -332,6 +332,7 @@ int main(void)
 			stop();
 			_delay_ms(10);
 		}
-		_delay_ms(40); 
+		//_delay_ms(40); 
+		pr_int(2,1,Output,3);
 	}
 }
