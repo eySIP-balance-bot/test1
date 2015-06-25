@@ -161,7 +161,7 @@ float comp_filter(float newAngle,  float newRate)
 	timeConstant=30; // default 1.0
 
 	filterTerm0 = (newAngle - filterAngle) * timeConstant * timeConstant;
-	filterTerm2 += filterTerm0 * dt;
+	filterTerm2  += filterTerm0 * dt;
 	filterTerm1 = filterTerm2 + ((newAngle - filterAngle) * 2 * timeConstant) + newRate;
 	filterAngle = (filterTerm1 * dt) + filterAngle;
 

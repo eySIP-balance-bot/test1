@@ -8,7 +8,7 @@
 #include "adxl.h"
 #include "gyro.h"
 
-#define Setpoint 0
+#define Setpoint 1
 
 
 
@@ -23,7 +23,6 @@ int para_flag=0;
 double error =0;
 
 
-
 void Compute()
 {
 	/*How long since we last calculated*/
@@ -31,19 +30,28 @@ void Compute()
 	
 	/*Compute all the working error variables*/
 	error = Input - Setpoint;
-	errSum += error+lastErr+lastErr2+lastErr3;
-	if (errSum >= 255)
+	if (error==0)
+	{
+		errSum=0;
+	}
+
+	errSum += error;//+lastErr+lastErr2+lastErr3;
+	
+	/*if (errSum >= 255)
 	{
 		errSum = 255;
 	}
 	else if (errSum <= -255)
 	{
 		errSum = -255;
-	}
+	}*/
+	
+	
 	double dErr = (error - lastErr);
 	
 	/*Compute PID Output*/
-	Output = kp * error + ki * errSum + kd * dErr;
+	Output = kp * error  + ki*errSum + kd*dErr;
+	
 	if (Output >= 255)
 	{
 		Output = 255;
@@ -57,7 +65,7 @@ void Compute()
 	lastErr3 = lastErr2;
 	lastErr2=lastErr;
 	lastErr = error;
-
+	
 }
 
 
@@ -214,6 +222,8 @@ void left (void) 			//input12 backward, input34 forward
 	motion_set(0x84);
 }
 
+
+
 void right (void) 			//input34 backward, input12 forward
 {
 	motion_set(0x60);
@@ -265,7 +275,7 @@ void SetTunings(double Kp, double Ki, double Kd)
 
 int main(void)
 {
-	int acc_Angle;
+	double acc_Angle;
 	int gyro_Angle;
 	int filt_Angle;
 	unsigned int pwm_value;
@@ -275,7 +285,7 @@ int main(void)
 	uart0_init(); //Initailize UART1 for serial communiaction
 	//start_timer4();
 	
-	SetTunings(6,0,0);
+	SetTunings(11,1.8,0);
 	lcd_print(1,1,kp*10,4);
 	lcd_print(1,6,ki*10,4);
 	lcd_print(1,11,kd*10,4);
@@ -288,51 +298,76 @@ int main(void)
 		gyro_Angle=gyro_Rate();
 		filt_Angle=comp_filter(acc_Angle,gyro_Angle);
 		//UDR0=(int8_t)acc_angle();
-		//UDR0=(int8_t)(acc_Angle+100);
+		
+		
+		
 		Input=filt_Angle;
 		//pr_int(1,1,Input,3);
 		if (error*lastErr < 0)
 		{
 			stop();
-			_delay_ms(10);
+			_delay_ms(5);
 		}
 		Compute();
 		if (Output>0)
 		{
 			//set_PWM_value(min((Output*Output),255));
-			pwm_value = (Output)+30;
+			pwm_value = (Output);
 			if(pwm_value>=255)
 			{
 				
 				pwm_value=255;
+				//stop();
+				//_delay_ms(50);
+				//set_PWM_value(255);
+				//forward();
+				//_delay_ms(100);
 			}
+			
+				
 			//pr_int(2,1,pwm_value,3);
 			set_PWM_value(pwm_value);
 			forward();
-			_delay_ms(10);
+			//_delay_ms(10);
 			//pwm_value=0;
 		}
 		else if(Output<0)
 		{
 			//set_PWM_value(min(Output*Output,255));
-			pwm_value = (-Output)+30;
+			pwm_value = (-Output);
 			if(pwm_value>=255)
 			{
 				
 				pwm_value=255;
+				//stop();
+				//_delay_ms(50);
+				//set_PWM_value(pwm_value);
+				//back();
+				//_delay_ms(100);
 			}
+			
+				
 			//pr_int(2,6,pwm_value,3);
 			set_PWM_value(pwm_value);
 			back();
-			_delay_ms(10);
+			//_delay_ms(10);
 			//pwm_value=0;
 		}
 		else if(Output==0)
 		{
 			stop();
-			_delay_ms(10);
+			//_delay_ms(10);
 		}
+		
 		//_delay_ms(40); 
-		pr_int(2,1,Output,3);
+		//pr_int(2,1,Output,3);
+		//UDR0=0xFF;
+		//UDR0=0xFE;
+		UDR0=(int8_t)(filt_Angle+100);
+		int8_t op=(Output/2)+127;
+		//UDR0=op;
+		
+		//UDR0=(Output/2)+127;
 	}
+	
 }
