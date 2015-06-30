@@ -8,14 +8,14 @@
 #include "adxl.h"
 #include "gyro.h"
 
-#define Setpoint 1
+#define Setpoint 0
 
 
 
 /*working variables*/
 double lastTime=0 ,lastTime2=0 ,lastTime3=0;
 double Input, Output;
-double errSum=0, lastErr=0 ,lastErr2=0 ,lastErr3=0;
+double errSum=0, lastErr=0 ,lastErr2=0 ,lastErr3=0,Iterm=0,lastErr4=0,lastErr5=0;
 double kp, ki, kd;
 unsigned char data; //to store received data from UDR0
 double para=0;
@@ -30,27 +30,28 @@ void Compute()
 	
 	/*Compute all the working error variables*/
 	error = Input - Setpoint;
-	if (error==0)
-	{
-		errSum=0;
-	}
+// 	if (error==0)
+// 	{
+// 		errSum=0;
+// 	}
 
-	errSum += error;//+lastErr+lastErr2+lastErr3;
-	
-	/*if (errSum >= 255)
+	//errSum += error;
+	//Iterm += error+lastErr+lastErr2+lastErr3+lastErr4+lastErr5;
+	Iterm += ki*0.1*error;
+	if (Iterm >= 255)
 	{
-		errSum = 255;
+		Iterm = 255;
 	}
-	else if (errSum <= -255)
+	else if (Iterm <= -255)
 	{
-		errSum = -255;
-	}*/
+		Iterm = -255;
+	}
 	
 	
 	double dErr = (error - lastErr);
 	
 	/*Compute PID Output*/
-	Output = kp * error  + ki*errSum + kd*dErr;
+	Output = kp*error + Iterm + kd*0.1*dErr;
 	
 	if (Output >= 255)
 	{
@@ -62,6 +63,8 @@ void Compute()
 	}
 	
 	/*Remember some variables for next time*/
+	lastErr5 = lastErr4;
+	lastErr4 = lastErr3;
 	lastErr3 = lastErr2;
 	lastErr2=lastErr;
 	lastErr = error;
@@ -191,7 +194,14 @@ void timer5_init(void)
 void set_PWM_value(unsigned char value) 	//set 8 bit PWM value
 {
 	OCR5AH = 0x00;
-	OCR5AL = value;
+	if(value<=245)
+	{
+	OCR5AL = value +10;  //motor  is slower
+	}
+	else 
+	{
+		OCR5AL = 255;
+	}	
 	OCR5BH = 0x00;
 	OCR5BL = value;
 }
@@ -285,7 +295,7 @@ int main(void)
 	uart0_init(); //Initailize UART1 for serial communiaction
 	//start_timer4();
 	
-	SetTunings(11,1.8,0);
+	SetTunings(1,0,0);
 	lcd_print(1,1,kp*10,4);
 	lcd_print(1,6,ki*10,4);
 	lcd_print(1,11,kd*10,4);
@@ -297,6 +307,7 @@ int main(void)
 		//pr_int(2,1,acc_Angle,3);
 		gyro_Angle=gyro_Rate();
 		filt_Angle=comp_filter(acc_Angle,gyro_Angle);
+		//pr_int(2,10,acc_Angle,3);
 		//UDR0=(int8_t)acc_angle();
 		
 		
@@ -312,7 +323,7 @@ int main(void)
 		if (Output>0)
 		{
 			//set_PWM_value(min((Output*Output),255));
-			pwm_value = (Output);
+			pwm_value = (Output)+35;
 			if(pwm_value>=255)
 			{
 				
@@ -334,7 +345,7 @@ int main(void)
 		else if(Output<0)
 		{
 			//set_PWM_value(min(Output*Output,255));
-			pwm_value = (-Output);
+			pwm_value = (-Output)+35;
 			if(pwm_value>=255)
 			{
 				
@@ -359,13 +370,14 @@ int main(void)
 			//_delay_ms(10);
 		}
 		
-		//_delay_ms(40); 
+		_delay_ms(20); 
 		//pr_int(2,1,Output,3);
-		//UDR0=0xFF;
-		//UDR0=0xFE;
-		UDR0=(int8_t)(filt_Angle+100);
-		int8_t op=(Output/2)+127;
-		//UDR0=op;
+		UDR0=0xFF;
+		_delay_ms(1);
+		UDR0=(uint8_t)(filt_Angle+100);
+		_delay_ms(1);
+		uint8_t op=(Output/2)+127;
+		UDR0=op;
 		
 		//UDR0=(Output/2)+127;
 	}
