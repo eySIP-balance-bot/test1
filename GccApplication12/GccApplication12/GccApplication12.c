@@ -1,44 +1,38 @@
-#define F_CPU 14745600
+//Project-PC Controlled Two Wheel Balanced Bot
+//Team members-B Suresh,Ramiz Hussain,Devendra Kr Jangid
+//This includes ATmega2560 Development board,Gy-80 IMU module
+
+#define F_CPU 14745600     //Defining frequency of microcontroller ATmega2560
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
 #include "timer.h"
-#include "adxl.h"
+#include "adxl.h"        //includes header files for accelerometer,gyroscope and timer
 #include "gyro.h"
 
-#define Setpoint 0
+#define Setpoint 0       //Balanced angle of the bot
 
 
 
 /*working variables*/
-double lastTime=0 ,lastTime2=0 ,lastTime3=0;
 double Input, Output;
-double errSum=0, lastErr=0 ,lastErr2=0 ,lastErr3=0,Iterm=0,lastErr4=0,lastErr5=0,dErr=0;
+double errSum=0,Iterm=0,dErr=0,lastErr;
 double kp, ki, kd;
-unsigned char data; //to store received data from UDR0
+unsigned char data;                     //to store received data from UDR0
 double para=0;
 int para_flag=0;
 double error =0;
 
 
-void Compute()
+void Compute()                          //Function for PID controller
 {
-	/*How long since we last calculated*/
-	//double timeChange = (double)millis();
 	
 	/*Compute all the working error variables*/
 	error = Input - Setpoint;
-// 	if (error==0)
-// 	{
-// 		errSum=0;
-// 	}
-
-	//errSum += error;
-	//Iterm += error+lastErr+lastErr2+lastErr3+lastErr4+lastErr5;
-	Iterm += ki*0.01*error;
-	if (Iterm >= 255)
+	Iterm += ki*0.01*error;            //Taking the sum of all previous errors to implement integral part of PID
+	if (Iterm >= 255)                 //Clamping te Integral part
 	{
 		Iterm = 255;
 	}
@@ -47,9 +41,9 @@ void Compute()
 		Iterm = -255;
 	}
 	
-	if(millis(1)>=10)
+	if(millis(1)>=10)           //condition to take differences after regular interval of time.
 	{
-		 dErr= (error - lastErr);
+		 dErr= (error - lastErr);   //Differential term of PID
 		lastErr=error;
 		start_timer4();
 	}
@@ -58,25 +52,7 @@ void Compute()
 		dErr=0;
 	}	
 	
-	/*Compute PID Output*/
-	Output = kp*error + Iterm + kd*0.1*dErr;
-	
-	if (Output >= 255)
-	{
-		Output = 255;
-	}
-	else if (Output <= -255)
-	{
-		Output = -255;
-	}
-	
-	/*Remember some variables for next time*/
-	lastErr5 = lastErr4;
-	lastErr4 = lastErr3;
-	lastErr3 = lastErr2;
-	lastErr2=lastErr;
-	//lastErr = error;
-	
+	Output = kp*error + Iterm + kd*0.1*dErr;                      //Compute PID Output
 }
 
 
@@ -87,19 +63,17 @@ void Compute()
 // parity: Disabled
 void uart0_init(void)
 {
-	UCSR0B = 0x00; //disable while setting baud rate
+	UCSR0B = 0x00;                //disable while setting baud rate
 	UCSR0A = 0x00;
 	UCSR0C = 0x06;
-	// UBRR0L = 0x47; //11059200 Hz
-	UBRR0L = 0x5F; // 14745600 Hzset baud rate lo
-	UBRR0H = 0x00; //set baud rate hi
+	UBRR0L = 0x5F;                // 14745600 Hzset baud rate lo
+	UBRR0H = 0x00;                //set baud rate hi
 	UCSR0B = 0x98;
 }
 
 ISR(USART0_RX_vect)
 {
 	data = UDR0;
-	//UDR0=data;
 	if (data == 55)
 	{
 		para = kp;
@@ -204,7 +178,7 @@ void set_PWM_value(unsigned char value) 	//set 8 bit PWM value
 	OCR5AH = 0x00;
 	OCR5AL = value;  //motor  is faster	
 	OCR5BH = 0x00;
-	if(value<=245)
+	if(value<=245)    //Modification to make velocity of two motors equal
 	{
 		OCR5BL = value+10;
 	}
@@ -284,26 +258,26 @@ void init_devices1 (void)
 	sei(); //Enables the global interrupts
 }
 
-void SetTunings(double Kp, double Ki, double Kd)
+void SetTunings(double Kp, double Ki, double Kd)   //Function to set tuning parameters of PID
 {
 	kp = Kp;
 	ki = Ki;
 	kd = Kd;
 }
 
-int main(void)
+int main(void)          //Main program starts from here
 {
 	double acc_Angle;
 	int gyro_Angle;
 	int filt_Angle;
 	unsigned int pwm_value;
-	init_adxl();
-	init_gyro();
+	init_adxl();               //Initialise accelerometer
+	init_gyro();               //Initialise gyroscope
 	init_devices1();
-	uart0_init(); //Initailize UART1 for serial communiaction
-	start_timer4();
+	uart0_init();              //Initailize UART1 for serial communiaction
+	start_timer4();            //Timer for timing calculations
 	
-	SetTunings(9.1,5,0);
+	SetTunings(9.1,8,5);
 	lcd_print(1,1,kp*10,4);
 	lcd_print(1,6,ki*10,4);
 	lcd_print(1,11,kd*10,4);
@@ -311,26 +285,13 @@ int main(void)
 	while(1)
 	{
 		
-		acc_Angle=0.1*acc_angle();
-		//pr_int(2,1,acc_Angle,3);
-		gyro_Angle=gyro_Rate();
-		filt_Angle=comp_filter(acc_Angle,gyro_Angle);
-		//pr_int(2,10,acc_Angle,3);
-		//UDR0=(int8_t)acc_angle();
-		
-		
-		
-		Input=filt_Angle;
-		//pr_int(1,1,Input,3);
-		if (error*lastErr < 0)
+		acc_Angle=0.1*acc_angle();        //Accelerometer angle
+		gyro_Angle=gyro_Rate();           //Anugular rate from Gyroscope
+		filt_Angle=comp_filter(acc_Angle,gyro_Angle);  //Filtered angle after passing through Complementary filter
+		Input=filt_Angle;                              //Input for error calculation of PID
+		Compute();                                  //Calling PID 
+		if (Output>0)                               //Mapping PID output to velocity of motors
 		{
-			stop();
-			_delay_ms(10);
-		}
-		Compute();
-		if (Output>0)
-		{
-			//set_PWM_value(min((Output*Output),255));
 			pwm_value = (Output+20);
 			if(pwm_value>=255)
 			{
@@ -356,16 +317,12 @@ int main(void)
 			stop();
 		}
 		
-		_delay_ms(20); 
-		//pr_int(2,1,Output,3);
+		//_delay_ms(20); 
 		UDR0=0xFF;
 		_delay_ms(1);
 		UDR0=(uint8_t)(filt_Angle+100);
 		_delay_ms(1);
 		uint8_t op=(Output/2)+127;
 		UDR0=op;
-		
-		//UDR0=(Output/2)+127;
 	}
-	
 }
