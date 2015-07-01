@@ -15,7 +15,7 @@
 /*working variables*/
 double lastTime=0 ,lastTime2=0 ,lastTime3=0;
 double Input, Output;
-double errSum=0, lastErr=0 ,lastErr2=0 ,lastErr3=0,Iterm=0,lastErr4=0,lastErr5=0;
+double errSum=0, lastErr=0 ,lastErr2=0 ,lastErr3=0,Iterm=0,lastErr4=0,lastErr5=0,dErr=0;
 double kp, ki, kd;
 unsigned char data; //to store received data from UDR0
 double para=0;
@@ -37,7 +37,7 @@ void Compute()
 
 	//errSum += error;
 	//Iterm += error+lastErr+lastErr2+lastErr3+lastErr4+lastErr5;
-	Iterm += ki*0.1*error;
+	Iterm += ki*0.01*error;
 	if (Iterm >= 255)
 	{
 		Iterm = 255;
@@ -47,8 +47,16 @@ void Compute()
 		Iterm = -255;
 	}
 	
-	
-	double dErr = (error - lastErr);
+	if(millis(1)>=10)
+	{
+		 dErr= (error - lastErr);
+		lastErr=error;
+		start_timer4();
+	}
+	else
+	{
+		dErr=0;
+	}	
 	
 	/*Compute PID Output*/
 	Output = kp*error + Iterm + kd*0.1*dErr;
@@ -67,7 +75,7 @@ void Compute()
 	lastErr4 = lastErr3;
 	lastErr3 = lastErr2;
 	lastErr2=lastErr;
-	lastErr = error;
+	//lastErr = error;
 	
 }
 
@@ -194,16 +202,16 @@ void timer5_init(void)
 void set_PWM_value(unsigned char value) 	//set 8 bit PWM value
 {
 	OCR5AH = 0x00;
+	OCR5AL = value;  //motor  is faster	
+	OCR5BH = 0x00;
 	if(value<=245)
 	{
-	OCR5AL = value +10;  //motor  is slower
+		OCR5BL = value+10;
 	}
-	else 
+	else
 	{
-		OCR5AL = 255;
-	}	
-	OCR5BH = 0x00;
-	OCR5BL = value;
+		OCR5BL = 255;
+	}
 }
 
 //Function used for setting motor's direction
@@ -293,9 +301,9 @@ int main(void)
 	init_gyro();
 	init_devices1();
 	uart0_init(); //Initailize UART1 for serial communiaction
-	//start_timer4();
+	start_timer4();
 	
-	SetTunings(1,0,0);
+	SetTunings(9.1,5,0);
 	lcd_print(1,1,kp*10,4);
 	lcd_print(1,6,ki*10,4);
 	lcd_print(1,11,kd*10,4);
@@ -317,57 +325,35 @@ int main(void)
 		if (error*lastErr < 0)
 		{
 			stop();
-			_delay_ms(5);
+			_delay_ms(10);
 		}
 		Compute();
 		if (Output>0)
 		{
 			//set_PWM_value(min((Output*Output),255));
-			pwm_value = (Output)+35;
+			pwm_value = (Output+20);
 			if(pwm_value>=255)
 			{
 				
 				pwm_value=255;
-				//stop();
-				//_delay_ms(50);
-				//set_PWM_value(255);
-				//forward();
-				//_delay_ms(100);
 			}
-			
-				
-			//pr_int(2,1,pwm_value,3);
 			set_PWM_value(pwm_value);
 			forward();
-			//_delay_ms(10);
-			//pwm_value=0;
 		}
 		else if(Output<0)
 		{
-			//set_PWM_value(min(Output*Output,255));
-			pwm_value = (-Output)+35;
+			pwm_value = (-Output)+20;
 			if(pwm_value>=255)
 			{
 				
 				pwm_value=255;
-				//stop();
-				//_delay_ms(50);
-				//set_PWM_value(pwm_value);
-				//back();
-				//_delay_ms(100);
 			}
-			
-				
-			//pr_int(2,6,pwm_value,3);
 			set_PWM_value(pwm_value);
 			back();
-			//_delay_ms(10);
-			//pwm_value=0;
 		}
 		else if(Output==0)
 		{
 			stop();
-			//_delay_ms(10);
 		}
 		
 		_delay_ms(20); 

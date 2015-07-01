@@ -52,11 +52,14 @@ int micros(void)
 	return time;
 
 }
-int millis(void)
+int millis(int mode)
 {
 	int time=0;
 	time=(tot_overflow + (TCNT4-50791)/14745);
-	start_timer4();
+	if (mode==0)
+	{		
+		start_timer4();
+	}	
 	return time;
 
 }
