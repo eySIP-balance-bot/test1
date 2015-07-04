@@ -12,8 +12,8 @@
 #include "adxl.h"        //includes header files for accelerometer,gyroscope and timer
 #include "gyro.h"
 
-#define Setpoint 0       //Balanced angle of the bot
 
+#define THRESHOLD 20
 
 
 /*working variables*/
@@ -24,7 +24,7 @@ unsigned char data;                     //to store received data from UDR0
 double para=0;
 int para_flag=0;
 double error =0;
-
+double Setpoint=0;       //Balanced angle of the bot
 
 void Compute()                          //Function for PID controller
 {
@@ -90,6 +90,20 @@ ISR(USART0_RX_vect)
 		para = kd;
 		para_flag=3;
 	}
+	else if (data == 48)
+	{
+		para = Setpoint;
+		para_flag=4;
+	}
+	else if (data == 97)
+	{
+		pid_left();
+	}
+	else if (data == 115)
+	{
+		pid_right();
+	}
+		
 	
 	
 	if (data==49)
@@ -118,7 +132,6 @@ ISR(USART0_RX_vect)
 	}
 	
 	
-	
 	if (para_flag == 1)
 	{
 		kp = para;
@@ -133,6 +146,11 @@ ISR(USART0_RX_vect)
 	{
 		kd = para;
 		lcd_print(1,11,kd*10,4);
+	}
+	else if (para_flag == 4)
+	{
+		Setpoint = para;
+		pr_int(2,1,Setpoint*10,3);
 	}
 	
 }
@@ -176,11 +194,11 @@ void timer5_init(void)
 void set_PWM_value(unsigned char value) 	//set 8 bit PWM value
 {
 	OCR5AH = 0x00;
-	OCR5AL = value;  //motor  is faster	
+	OCR5AL = value;  //motor A	
 	OCR5BH = 0x00;
-	if(value<=245)    //Modification to make velocity of two motors equal
+	if(value<=240)    //Modification to make velocity of two motors equal
 	{
-		OCR5BL = value+10;
+		OCR5BL = value+15;    //motor B
 	}
 	else
 	{
@@ -265,6 +283,22 @@ void SetTunings(double Kp, double Ki, double Kd)   //Function to set tuning para
 	kd = Kd;
 }
 
+void pid_right(void)
+{
+	OCR5AH=0x00;
+	OCR5AL=0x00;
+	_delay_ms(10);
+}
+
+void pid_left(void)
+{
+	OCR5BH = 0x00;
+	OCR5BL = 0x00;
+	_delay_ms(10);
+}
+
+
+
 int main(void)          //Main program starts from here
 {
 	double acc_Angle;
@@ -277,7 +311,7 @@ int main(void)          //Main program starts from here
 	uart0_init();              //Initailize UART1 for serial communiaction
 	start_timer4();            //Timer for timing calculations
 	
-	SetTunings(9.1,8,5);
+	SetTunings(8.1,8,5);
 	lcd_print(1,1,kp*10,4);
 	lcd_print(1,6,ki*10,4);
 	lcd_print(1,11,kd*10,4);
@@ -292,7 +326,7 @@ int main(void)          //Main program starts from here
 		Compute();                                  //Calling PID 
 		if (Output>0)                               //Mapping PID output to velocity of motors
 		{
-			pwm_value = (Output+20);
+			pwm_value = (Output+THRESHOLD);
 			if(pwm_value>=255)
 			{
 				
@@ -303,7 +337,7 @@ int main(void)          //Main program starts from here
 		}
 		else if(Output<0)
 		{
-			pwm_value = (-Output)+20;
+			pwm_value = (-Output)+THRESHOLD;
 			if(pwm_value>=255)
 			{
 				
@@ -312,7 +346,7 @@ int main(void)          //Main program starts from here
 			set_PWM_value(pwm_value);
 			back();
 		}
-		else if(Output==0)
+		else if(Input==0)
 		{
 			stop();
 		}
