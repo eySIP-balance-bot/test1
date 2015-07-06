@@ -4,19 +4,13 @@
  Experiment: Serial communication
  Written by: Vinod Desai, NEX Robotics Pvt. Ltd.
  Edited By: Sachitanand Malewar, NEX Robotics Pvt. Ltd.
- Last Modification: 08th May 2012
- AVR Studio Version 4.17, Build 666
-
- Concepts covered: Two wire(I2C) interfacing with DS1037 
  
- This program demonstrate the interfacing of External RTC (DS1307) with the microcontroller via I2C bus.
- Values from the RTC are displayed on the LCD.
+ Concepts covered: Two wire(I2C) interfacing with L3G4200D 
+ 
+ This program demonstrate the interfacing of IMU (GY-80) with the microcontroller via I2C bus.
 
- Hardware Setup: (Ref. Fig. 3.21 from chapter 3)
- Connect the jumpers at SCL and SDA lines at the I2C Header to interface DS1307 with the microcontroller.
- For more details refer to section 3.11
-
- Refer product manual for more detailed description.
+ Hardware Setup:
+ Connect the jumpers at SCL and SDA lines at the I2C Header to interface GY-80 with the microcontroller.
 
  Note: 
  

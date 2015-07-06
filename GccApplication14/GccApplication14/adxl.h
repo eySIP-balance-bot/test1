@@ -4,19 +4,13 @@
  Experiment: Serial communication
  Written by: Vinod Desai, NEX Robotics Pvt. Ltd.
  Edited By: Sachitanand Malewar, NEX Robotics Pvt. Ltd.
- Last Modification: 08th May 2012
- AVR Studio Version 4.17, Build 666
-
- Concepts covered: Two wire(I2C) interfacing with DS1037 
  
- This program demonstrate the interfacing of External RTC (DS1307) with the microcontroller via I2C bus.
- Values from the RTC are displayed on the LCD.
+ Concepts covered: Two wire(I2C) interfacing with ADXL345
+ 
+ This program demonstrate the interfacing of IMU (GY-80) with the microcontroller via I2C bus.
 
- Hardware Setup: (Ref. Fig. 3.21 from chapter 3)
- Connect the jumpers at SCL and SDA lines at the I2C Header to interface DS1307 with the microcontroller.
- For more details refer to section 3.11
-
- Refer product manual for more detailed description.
+ Hardware Setup:
+ Connect the jumpers at SCL and SDA lines at the I2C Header to interface GY-80 with the microcontroller.
 
  Note: 
  
@@ -217,56 +211,38 @@ int acc_angle(void)
 	    uint16_t x_byte = 0,y_byte = 0,z_byte = 0;
 		uint8_t x_byte1 = 0,x_byte2 = 0,y_byte1 = 0,y_byte2 = 0,z_byte1 = 0,z_byte2 = 0;
 		int x_acc,y_acc,z_acc;
-		//long x,y,z;
 		float angle;
  
 	  
 	   x_byte1 = read_byte(X1);
-	   //x_byte1=(x_byte1*1000)/256;
-	   //lcd_print(1,1,x_byte1,3);
-	   
+	
 	   x_byte2 = read_byte(X2);
-	   //lcd_print(2,1,abs(x_byte2),3);
-	   
+
 	   y_byte1 = read_byte(Y1);
-	   //lcd_print(1,6,y_byte1,3);
-	   
+
 	   y_byte2 = read_byte(Y2);
-	   //lcd_print(2,6,y_byte2,3);
-	   
+
 	   z_byte1 = read_byte(Z1);
-	   //lcd_print(1,10,z_byte1,3);
-	   
+
 	   z_byte2 = read_byte(Z2);
-	   //lcd_print(2,10,z_byte2,3);
-	    
-	   //x_byte2 &= 0x03;
-	  
+	     
 	  x_byte=x_byte2;
 	  x_byte = (x_byte << 8);
 	  x_byte |= x_byte1;
 	  x_acc=sign(x_byte);
-	  
-	  //pr_int(1,1,x_byte,3); 
 	  
 	  y_byte=y_byte2;
 	  y_byte = (y_byte << 8);
 	  y_byte |= y_byte1;
 	  y_acc=sign(y_byte);
 	  
-	  //pr_int(2,5,y_byte,3); 	
-	  
 	  z_byte=z_byte2;
 	  z_byte = (z_byte << 8);
 	  z_byte |= z_byte1;
 	  z_acc=sign(z_byte);
 	  
-	  
-	  //pr_int(1,10,z_byte,3);  
-	  
 	  angle=(atan((y_acc*1.0)/(z_acc*1.0)));
-	  angle *= 1800.0/3.14;
-	  //pr_int(1,1,angle,3);
+	  angle *= 10*180.0/3.14;
 	  
 	return angle;
 }
