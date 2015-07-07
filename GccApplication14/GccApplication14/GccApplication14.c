@@ -1,5 +1,5 @@
 
-/*
+/***********************************************************************************************************************************
  * eYSIP-2015
  * PC Controlled Two Wheel Balanced Bot
  * Author List: B Suresh, Ramiz Hussain, Devendra Kr Jangid
@@ -12,7 +12,12 @@
  * The orientation information is taken from ADXL345,L3G4200D of GY-80 using I2C protocol
  * PID Controller is used to calculate the output and this output is mapped to the velocity of the motors
  * Zigbee is used Tuning and Controlling using PC
- */
+ --------------------------------------------------
+ * The values visible on the lcd is as follows:
+ * 		(10*kp) (1000*ki) (100*ki)
+ *For example:  0120 0080 0050   ==> kp=12 ; ki=0.08 ; kd=0.5 
+ *				+010             ==> Setpoint = 1 degree
+ ************************************************************************************************************************************/
 
 #define F_CPU 14745600     //Defining frequency of microcontroller ATmega2560
 

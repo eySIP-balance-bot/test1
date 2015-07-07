@@ -1,28 +1,14 @@
 
 /********************************************************************************
- Platform: ATMEGA2560 Development Board
- Experiment: Serial communication
- Written by: Vinod Desai, NEX Robotics Pvt. Ltd.
- Edited By: Sachitanand Malewar, NEX Robotics Pvt. Ltd.
- 
- Concepts covered: Two wire(I2C) interfacing with L3G4200D 
- 
- This program demonstrate the interfacing of IMU (GY-80) with the microcontroller via I2C bus.
-
- Hardware Setup:
- Connect the jumpers at SCL and SDA lines at the I2C Header to interface GY-80 with the microcontroller.
-
- Note: 
- 
- 1. Make sure that in the configuration options following settings are 
- 	done for proper operation of the code
-
- 	Microcontroller: ATMEGA2560
- 	Frequency: 14745600Hz
- 	Optimization: -O0 (For more information refer to the section below figure 2.22 in the product manual)
-
- 2. Include lcd.c file in the same project file.
-
+ * eYSIP-2015
+ * PC Controlled Two Wheel Balanced Bot
+ * Author List: B Suresh, Ramiz Hussain, Devendra Kr Jangid
+ * Mentors: Piyush Manavar, Saurav Shandilya
+ * Filename: Gyro.h
+ * Functions:write_byte_gyro(unsigned char, unsigned char), read_byte_gyro(unsigned char), sign(int), init_gyro(), gyro_Rate(), comp_filter(float, float)
+ * Global Variables:None
+ *
+ * 
 *********************************************************************************/
 #define F_CPU 14745600
 
@@ -32,8 +18,8 @@
 
 
 
-#define	SLAVE_W	0xD2             // Write address for DS1307 selection for writing	
-#define	SLAVE_R	0xD3             // Write address for DS1307 selection for reading  
+#define	SLAVE_W	0xD2             // Write address for L3G4200D selection for writing	
+#define	SLAVE_R	0xD3             // Write address for L3G4200D selection for reading  
 
 //------------------------------------------------------------------------------
 // define Gyroscope register addresses
@@ -60,7 +46,7 @@ void write_byte_gyro(unsigned char data_out,unsigned char address)
  while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
  _delay_ms(10);                                    
 
- TWDR = SLAVE_W;                                     // load SLA_W into TWDR Register
+ TWDR = SLAVE_W;                                    // load SLA_W into TWDR Register
  TWCR  = (1<<TWINT) | (0<<TWSTA) | (1<<TWEN);      // clear TWINT flag to start tramnsmission of slave address 
  while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
  _delay_ms(10);
@@ -70,7 +56,7 @@ void write_byte_gyro(unsigned char data_out,unsigned char address)
  while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
  _delay_ms(10);
 
- TWDR = data_out;                       // convert the character to equivalent BCD value and load into TWDR
+ TWDR = data_out;                       			// convert the character to equivalent BCD value and load into TWDR
  TWCR  = (1<<TWINT) | (1<<TWEN);                   // clear TWINT flag to start tramnsmission of data byte
  while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
  _delay_ms(10);
@@ -89,56 +75,67 @@ unsigned char read_byte_gyro(unsigned char address)
  unsigned char rtc_recv_data;
 
  
-TWCR = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN);      // send START condition  
-while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
+TWCR = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN);      	// send START condition  
+while(!(TWCR & (1<<TWINT)));                      	// wait for TWINT Flag set
  //_delay_ms(10);
 
  
 
- TWDR = SLAVE_W;									   // load SLA_W into TWDR Register
- TWCR  = (1<<TWINT) | (1<<TWEN);                   // clear TWINT flag to start tramnsmission of slave address 
- while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
+ TWDR = SLAVE_W;									// load SLA_W into TWDR Register
+ TWCR  = (1<<TWINT) | (1<<TWEN);                   	// clear TWINT flag to start tramnsmission of slave address 
+ while(!(TWCR & (1<<TWINT)));                      	// wait for TWINT Flag set
  //_delay_ms(10); 
 
- TWDR = address;                                   // send address of register byte want to access register
- TWCR  = (1<<TWINT) | (1<<TWEN);                   // clear TWINT flag to start tramnsmission of slave address 
- while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
+ TWDR = address;                                   	// send address of register byte want to access register
+ TWCR  = (1<<TWINT) | (1<<TWEN);                   	// clear TWINT flag to start tramnsmission of slave address 
+ while(!(TWCR & (1<<TWINT)));                      	// wait for TWINT Flag set
 // _delay_ms(10);
  
 
 
- TWCR = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN);       // send RESTART condition
- while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
+ TWCR = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN);       	// send RESTART condition
+ while(!(TWCR & (1<<TWINT)));                      	// wait for TWINT Flag set
  //_delay_ms(10);
 
 
  
- TWDR = SLAVE_R;									   // load SLA_R into TWDR Register
- TWCR  = (1<<TWINT) | (0<<TWSTA) | (1<<TWEN);      // clear TWINT flag to start tramnsmission of slave address 
- while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
+ TWDR = SLAVE_R;									// load SLA_R into TWDR Register
+ TWCR  = (1<<TWINT) | (0<<TWSTA) | (1<<TWEN);      	// clear TWINT flag to start tramnsmission of slave address 
+ while(!(TWCR & (1<<TWINT)));                      	// wait for TWINT Flag set
  //_delay_ms(10);
  
  
 
- TWCR  = (1<<TWINT) | (1<<TWEN);                   // clear TWINT flag to read the addressed register
- while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
+ TWCR  = (1<<TWINT) | (1<<TWEN);                   	// clear TWINT flag to read the addressed register
+ while(!(TWCR & (1<<TWINT)));                      	// wait for TWINT Flag set
  rtc_recv_data = TWDR;
  //_delay_ms(10);
  
 
- TWDR = 00;                                        // laod the NO-ACK value to TWDR register 
- TWCR  = (1<<TWINT) | (1<<TWEN);                   // clear TWINT flag to start tramnsmission of NO_ACK signal
- while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
+ TWDR = 00;                                        	// laod the NO-ACK value to TWDR register 
+ TWCR  = (1<<TWINT) | (1<<TWEN);                   	// clear TWINT flag to start tramnsmission of NO_ACK signal
+ while(!(TWCR & (1<<TWINT)));                      	// wait for TWINT Flag set
  //_delay_ms(10);
   
- return(rtc_recv_data);                            // return the read value to called function
+ return(rtc_recv_data);                            	// return the read value to called function
+}
+
+int sign (unsigned int n)
+{
+	if (n>32767)
+	{
+		return (n-65536);
+	}
+	else
+		return n;
+		
 }
 
 void init_gyro(void)
 {   
  
 
-	 write_byte_gyro(0x0F,0x20);       //Normal mode of control reg.1
+	 write_byte_gyro(0x0F,0x20);       		//Normal mode of control reg.1
 }
 
 //Complementary filter
@@ -161,8 +158,15 @@ float comp_filter(float newAngle,  float newRate)
 
 	return filterAngle; // This is actually the current angle, but is stored for the next iteration
 }
-//-------------------------------------
-// Main Programme start here.
+//-------------------------------------------------------------------------------
+/*
+* Function Name: gyro_Rate()
+* Input: None
+* Output: x_ang(gyroscope reading along x axis)
+* Logic: Read the registers and combine and return the signed value
+* Example Call:var=gyro_Rate();
+*
+*/
 //-------------------------------------------------------------------------------
 float gyro_Rate(void)
 {   
@@ -173,14 +177,10 @@ float gyro_Rate(void)
   int filt_ang=0;
  
 	   
-	   
-	  x_byte1 = read_byte_gyro(XL);
-	  //lcd_print(1,1,x_byte1,3);
-	   
+	   x_byte1 = read_byte_gyro(XL);	   
 	   x_byte2 = read_byte_gyro(XH);
-	   //lcd_print(2,1,x_byte2,3);
 	   
-	   x_byte = x_byte2;   // to print 10 bit integer value on LCD
+	   x_byte = x_byte2;   				// combining the values from the two registers
 	   x_byte = (x_byte << 8);
 	   x_byte |= x_byte1;
 	   x_ang = sign(x_byte);

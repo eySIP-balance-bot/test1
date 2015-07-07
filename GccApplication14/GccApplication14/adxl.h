@@ -1,28 +1,15 @@
 
 /********************************************************************************
- Platform: ATMEGA2560 Development Board
- Experiment: Serial communication
- Written by: Vinod Desai, NEX Robotics Pvt. Ltd.
- Edited By: Sachitanand Malewar, NEX Robotics Pvt. Ltd.
- 
- Concepts covered: Two wire(I2C) interfacing with ADXL345
- 
- This program demonstrate the interfacing of IMU (GY-80) with the microcontroller via I2C bus.
-
- Hardware Setup:
- Connect the jumpers at SCL and SDA lines at the I2C Header to interface GY-80 with the microcontroller.
-
- Note: 
- 
- 1. Make sure that in the configuration options following settings are 
- 	done for proper operation of the code
-
- 	Microcontroller: ATMEGA2560
- 	Frequency: 14745600Hz
- 	Optimization: -O0 (For more information refer to the section below figure 2.22 in the product manual)
-
- 2. Include lcd.c file in the same project file.
-
+ * eYSIP-2015
+ * PC Controlled Two Wheel Balanced Bot
+ * Author List: B Suresh, Ramiz Hussain, Devendra Kr Jangid
+ * Mentors: Piyush Manavar, Saurav Shandilya
+ * Filename: adxl.h
+ * Functions:write_byte(unsigned char, unsigned char), read_byte(unsigned char), sign(int), init_adxl(), acc_angle(), comp_filter(float, float),
+ * 			 init_devices(), lcd_port_config(), twi_init(), pr_int(int, int, int, int)	
+ * Global Variables:None
+ *
+ * 
 *********************************************************************************/
 #define F_CPU 14745600
 
@@ -80,7 +67,7 @@ void twi_init(void)
 // Procedure:	write_byte 
 // Inputs:		data out, address
 // Outputs:		none
-// Description:	Writes a byte to the RTC given the address register 
+// Description:	Writes a byte to the ADXL345 given the address register 
 //------------------------------------------------------------------------------
 void write_byte(unsigned char data_out,unsigned char address)
 {
@@ -156,18 +143,28 @@ while(!(TWCR & (1<<TWINT)));                      // wait for TWINT Flag set
 }
 
 
-// initialise the devices 
+// initialise the LCD and I2C 
 void init_devices()
 {
  cli();              // disable all interrupts 
  lcd_port_config();  // configure the LCD port 
  lcd_set_4bit();
  lcd_init();
- twi_init();         // configur the I2cC, i.e TWI module 
+ twi_init();         // configure the I2C, i.e TWI module 
  sei();              // re-enable interrupts
  //all peripherals are now initialized
 }
 
+//-------------------------------------------------------------------------------
+/*
+* Function Name: pr_int
+* Input: a(row), b(column), c(signed int), d(precision)
+* Output: display on lcd
+* Logic: Based on the sign of c an additional sign is added before the display of the number
+* Example Call:pr_int(1,1,-6565,4);
+*
+*/
+//-------------------------------------------------------------------------------
 void pr_int(int a,int b,int c,int d) /* get negative values*/
 {
 	if (c<0)
@@ -184,6 +181,7 @@ void pr_int(int a,int b,int c,int d) /* get negative values*/
 	}
 }
 
+//To convert unsigned 16 bit integer to signed integer
 int sign (unsigned int n)
 {
 	if (n>32767)
@@ -194,18 +192,30 @@ int sign (unsigned int n)
 		return n;
 		
 }
-//-------------------------------------------------------------------------------
-// Main Programme start here.
-//-------------------------------------------------------------------------------
+
+//To initiate the accelerometer and put it in measure mode 
 void init_adxl(void)
 {   
  
  init_devices();
 
-	write_byte(0x0,0x2D);
-	write_byte(0x8,0x2D);
+	write_byte(0x0,0x2D);			
+	write_byte(0x8,0x2D);			//To put ADXL345 in measurement mode
 }
 
+
+//-------------------------------------------------------------------------------
+/*
+* Function Name: acc_angle()
+* Input: None
+* Output: angle
+* Logic: 1.Read the registers and combine and return the signed value
+* 		 2.Taking the arctan(horizontal component/vertical component).The other component need to be neutral
+*		 3.Converting radians to degrees
+* Example Call:var=acc_angle();
+*
+*/
+//-------------------------------------------------------------------------------
 int acc_angle(void)
 {
 	    uint16_t x_byte = 0,y_byte = 0,z_byte = 0;
@@ -214,7 +224,7 @@ int acc_angle(void)
 		float angle;
  
 	  
-	   x_byte1 = read_byte(X1);
+	   x_byte1 = read_byte(X1);						//Reading registers
 	
 	   x_byte2 = read_byte(X2);
 
@@ -226,7 +236,7 @@ int acc_angle(void)
 
 	   z_byte2 = read_byte(Z2);
 	     
-	  x_byte=x_byte2;
+	  x_byte=x_byte2;								//merging the values from two registers to one variable
 	  x_byte = (x_byte << 8);
 	  x_byte |= x_byte1;
 	  x_acc=sign(x_byte);
@@ -241,8 +251,8 @@ int acc_angle(void)
 	  z_byte |= z_byte1;
 	  z_acc=sign(z_byte);
 	  
-	  angle=(atan((y_acc*1.0)/(z_acc*1.0)));
-	  angle *= 10*180.0/3.14;
+	  angle=(atan((y_acc*1.0)/(z_acc*1.0)));		//Angle calculation in radians
+	  angle *= 10*180.0/3.14;						//Angle conversion to degrees
 	  
 	return angle;
 }
